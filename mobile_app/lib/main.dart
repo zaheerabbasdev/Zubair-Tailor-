@@ -11,7 +11,6 @@ void main() {
   runApp(
     MultiProvider(
       providers: [
-
         ChangeNotifierProvider(create: (_) => LocaleProvider()),
       ],
       child: const MyApp(),

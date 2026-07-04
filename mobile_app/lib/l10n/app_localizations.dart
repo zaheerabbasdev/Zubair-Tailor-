@@ -433,6 +433,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cannot delete customer with active orders'**
   String get deleteErrorOrders;
+
+  /// No description provided for @ban.
+  ///
+  /// In en, this message translates to:
+  /// **'Ban'**
+  String get ban;
+
+  /// No description provided for @golBan.
+  ///
+  /// In en, this message translates to:
+  /// **'Gol Ban'**
+  String get golBan;
+
+  /// No description provided for @none.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get none;
+
+  /// No description provided for @square.
+  ///
+  /// In en, this message translates to:
+  /// **'Square'**
+  String get square;
+
+  /// No description provided for @round.
+  ///
+  /// In en, this message translates to:
+  /// **'Round'**
+  String get round;
+
+  /// No description provided for @gol.
+  ///
+  /// In en, this message translates to:
+  /// **'Gol'**
+  String get gol;
+
+  /// No description provided for @single.
+  ///
+  /// In en, this message translates to:
+  /// **'Single'**
+  String get single;
+
+  /// No description provided for @double.
+  ///
+  /// In en, this message translates to:
+  /// **'Double'**
+  String get double;
+
+  /// No description provided for @style.
+  ///
+  /// In en, this message translates to:
+  /// **'Style'**
+  String get style;
+
+  /// No description provided for @stitchingDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Stitching & Details'**
+  String get stitchingDetails;
+
+  /// No description provided for @settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings;
+
+  /// No description provided for @appearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get appearance;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
 }
 
 class _AppLocalizationsDelegate

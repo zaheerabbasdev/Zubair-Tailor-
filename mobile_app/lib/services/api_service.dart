@@ -47,7 +47,7 @@ class ApiService {
     final newCustomer = {
       ...data,
       'id': newId,
-      'unique_id': 'CUS${newId.toString().padLeft(4, '0')}',
+      'unique_id': newId.toString().padLeft(4, '0'),
     };
     list.add(newCustomer);
     await _saveList(_customersKey, list);
@@ -55,6 +55,11 @@ class ApiService {
   }
 
   Future<Response> deleteCustomer(int id) async {
+    final orders = await _getList(_ordersKey);
+    final hasDeliveredOrder = orders.any((e) => e['customer_id'] == id && e['status'] == 'Delivered');
+    if (hasDeliveredOrder) {
+      throw Exception('Cannot delete customer with delivered orders');
+    }
     final list = await _getList(_customersKey);
     list.removeWhere((e) => e['id'] == id);
     await _saveList(_customersKey, list);

@@ -175,4 +175,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deleteErrorOrders => 'Cannot delete customer with active orders';
+
+  @override
+  String get ban => 'Ban';
+
+  @override
+  String get golBan => 'Gol Ban';
+
+  @override
+  String get none => 'None';
+
+  @override
+  String get square => 'Square';
+
+  @override
+  String get round => 'Round';
+
+  @override
+  String get gol => 'Gol';
+
+  @override
+  String get single => 'Single';
+
+  @override
+  String get double => 'Double';
+
+  @override
+  String get style => 'Style';
+
+  @override
+  String get stitchingDetails => 'Stitching & Details';
+
+  @override
+  String get settings => 'Settings';
+
+  @override
+  String get appearance => 'Appearance';
+
+  @override
+  String get language => 'Language';
 }

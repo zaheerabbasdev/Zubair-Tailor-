@@ -194,19 +194,18 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                     const Divider(height: 32),
                     const Text("STYLE", style: TextStyle(letterSpacing: 1.2, fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary)),
                     const SizedBox(height: 12),
-                    _buildMeasurementRow(l10n.banType, m.banType, l10n.damanType, m.damanType),
-                    _buildMeasurementRow(l10n.sleeveType, m.sleeveType, null, null),
+                    _buildMeasurementRow(l10n.banType, _getLocalizedValue(m.banType, l10n), l10n.damanType, _getLocalizedValue(m.damanType, l10n)),
+                    _buildMeasurementRow(l10n.sleeveType, _getLocalizedValue(m.sleeveType, l10n), null, null),
 
                     const Divider(height: 32),
-                    const Text("DETAILS", style: TextStyle(letterSpacing: 1.2, fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary)),
+                    Text(l10n.stitchingDetails.toUpperCase(), style: const TextStyle(letterSpacing: 1.2, fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary)),
                     const SizedBox(height: 12),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
                       children: [
                         if (m.frontPocket) _buildBadge(l10n.frontPocket),
-                        if (m.sidePocket) _buildBadge(l10n.sidePocket),
-                        if (m.cuff) _buildBadge(l10n.cuff),
+                        if (m.pocketType != null && m.pocketType != 'none') _buildBadge("${l10n.sidePocket}: ${_getLocalizedValue(m.pocketType, l10n)}"),
                         if (m.shalwarPocket) _buildBadge(l10n.shalwarPocket),
                         if (m.ringButton) _buildBadge(l10n.ringButton),
                         if (m.doubleSilai) _buildBadge(l10n.doubleSilai),
@@ -250,6 +249,22 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
         ],
       ),
     );
+  }
+
+  String _getLocalizedValue(String? value, AppLocalizations l10n) {
+    if (value == null) return '-';
+    switch (value) {
+      case 'ban': return l10n.ban;
+      case 'gol_ban': return l10n.golBan;
+      case 'none': return l10n.none;
+      case 'square': return l10n.square;
+      case 'round': return l10n.round;
+      case 'gol': return l10n.gol;
+      case 'cuff': return l10n.cuff;
+      case 'single': return l10n.single;
+      case 'double': return l10n.double;
+      default: return value;
+    }
   }
 
   Widget _buildMeasurementRow(String l1, dynamic v1, String? l2, dynamic v2) {

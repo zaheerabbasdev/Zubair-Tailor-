@@ -13,7 +13,7 @@ class Measurement {
   final String? shalwarLength;
   final String? damanType;
   final bool frontPocket;
-  final bool sidePocket;
+  final String? pocketType;
   final String? sleeveType;
   final bool cuff;
   final bool shalwarPocket;
@@ -40,7 +40,7 @@ class Measurement {
     this.shalwarLength,
     this.damanType,
     this.frontPocket = false,
-    this.sidePocket = false,
+    this.pocketType,
     this.sleeveType,
     this.cuff = false,
     this.shalwarPocket = false,
@@ -69,7 +69,7 @@ class Measurement {
       shalwarLength: json['shalwar_length']?.toString(),
       damanType: json['daman_type'],
       frontPocket: json['front_pocket'] == 1 || json['front_pocket'] == true,
-      sidePocket: json['side_pocket'] == 1 || json['side_pocket'] == true,
+      pocketType: json['pocket_type'],
       sleeveType: json['sleeve_type'],
       cuff: json['cuff'] == 1 || json['cuff'] == true,
       shalwarPocket: json['shalwar_pocket'] == 1 || json['shalwar_pocket'] == true,
@@ -99,7 +99,7 @@ class Measurement {
       'shalwar_length': shalwarLength,
       'daman_type': damanType,
       'front_pocket': frontPocket,
-      'side_pocket': sidePocket,
+      'pocket_type': pocketType,
       'sleeve_type': sleeveType,
       'cuff': cuff,
       'shalwar_pocket': shalwarPocket,
@@ -113,3 +113,4 @@ class Measurement {
     };
   }
 }
+

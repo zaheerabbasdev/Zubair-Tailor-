@@ -48,7 +48,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // Auth and Locale providers removed from here as they are now used in AppDrawer
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       drawer: const AppDrawer(),
       appBar: AppBar(
         title: Text(l10n.appName, style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2)),

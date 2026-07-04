@@ -108,9 +108,12 @@ class _OrderListScreenState extends State<OrderListScreen> {
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               TextButton.icon(
-                                icon: const Icon(Icons.edit_outlined, size: 20),
-                                label: const Text("Update Status / اسٹیٹس تبدیل کریں"),
-                                onPressed: () => _showStatusUpdateDialog(order),
+                                icon: Icon(Icons.edit_outlined, size: 20, color: order.status == 'Delivered' ? Colors.grey : AppColors.primary),
+                                label: Text(
+                                  "Update Status / اسٹیٹس تبدیل کریں",
+                                  style: TextStyle(color: order.status == 'Delivered' ? Colors.grey : AppColors.primary, fontWeight: FontWeight.bold),
+                                ),
+                                onPressed: order.status == 'Delivered' ? null : () => _showStatusUpdateDialog(order),
                               ),
                             ],
                           ),

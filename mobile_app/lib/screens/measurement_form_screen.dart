@@ -56,8 +56,7 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
 
   // Stitching & Details (Booleans)
   bool _frontPocket = false;
-  bool _sidePocket = false;
-  bool _cuff = false;
+  String? _pocketType;
   bool _shalwarPocket = false;
   bool _ringButton = false;
   bool _doubleSilai = false;
@@ -85,8 +84,7 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
     _sleeveType = m?.sleeveType;
 
     _frontPocket = m?.frontPocket ?? false;
-    _sidePocket = m?.sidePocket ?? false;
-    _cuff = m?.cuff ?? false;
+    _pocketType = m?.pocketType;
     _shalwarPocket = m?.shalwarPocket ?? false;
     _ringButton = m?.ringButton ?? false;
     _doubleSilai = m?.doubleSilai ?? false;
@@ -120,24 +118,40 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
             _buildField(l10n.collar, _collarCont),
 
             const SizedBox(height: 32),
-            _buildSectionHeader(Icons.style, "Style / ڈیزائن"),
+            _buildSectionHeader(Icons.style, l10n.style),
             const SizedBox(height: 16),
-            _buildDropdown(l10n.banType, _banType, ['Ban / بین', 'Gol Ban / گول بین', 'None / کچھ نہیں'], (v) => setState(() => _banType = v)),
+            _buildDropdownLocalized(l10n.banType, _banType, {
+              'ban': l10n.ban,
+              'gol_ban': l10n.golBan,
+              'none': l10n.none,
+            }, (v) => setState(() => _banType = v)),
             const SizedBox(height: 12),
-            _buildDropdown(l10n.damanType, _damanType, ['Square / چورس', 'Round / گول'], (v) => setState(() => _damanType = v)),
+            _buildDropdownLocalized(l10n.damanType, _damanType, {
+              'square': l10n.square,
+              'round': l10n.round,
+              'none': l10n.none,
+            }, (v) => setState(() => _damanType = v)),
             const SizedBox(height: 12),
-            _buildDropdown(l10n.sleeveType, _sleeveType, ['Gol / گول', 'Straight / سیدھی'], (v) => setState(() => _sleeveType = v)),
+            _buildDropdownLocalized(l10n.sleeveType, _sleeveType, {
+              'gol': l10n.gol,
+              'cuff': l10n.cuff,
+              'none': l10n.none,
+            }, (v) => setState(() => _sleeveType = v)),
+            const SizedBox(height: 12),
+            _buildDropdownLocalized(l10n.sidePocket, _pocketType, {
+              'single': l10n.single,
+              'double': l10n.double,
+              'none': l10n.none,
+            }, (v) => setState(() => _pocketType = v)),
 
             const SizedBox(height: 32),
-            _buildSectionHeader(Icons.settings, "Stitching & Details / سلائی اور بٹن"),
+            _buildSectionHeader(Icons.settings, l10n.stitchingDetails),
             const SizedBox(height: 16),
             Wrap(
               spacing: 12,
               runSpacing: 12,
               children: [
                 _buildSwitch(l10n.frontPocket, _frontPocket, (v) => setState(() => _frontPocket = v)),
-                _buildSwitch(l10n.sidePocket, _sidePocket, (v) => setState(() => _sidePocket = v)),
-                _buildSwitch(l10n.cuff, _cuff, (v) => setState(() => _cuff = v)),
                 _buildSwitch(l10n.shalwarPocket, _shalwarPocket, (v) => setState(() => _shalwarPocket = v)),
                 _buildSwitch(l10n.ringButton, _ringButton, (v) => setState(() => _ringButton = v)),
                 _buildSwitch(l10n.doubleSilai, _doubleSilai, (v) => setState(() => _doubleSilai = v)),
@@ -207,6 +221,7 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
               },
               itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                 const PopupMenuItem<String>(value: '¼', child: Text('¼')),
+                const PopupMenuItem<String>(value: '⅓', child: Text('⅓')),
                 const PopupMenuItem<String>(value: '½', child: Text('½')),
                 const PopupMenuItem<String>(value: '¾', child: Text('¾')),
               ],
@@ -226,6 +241,22 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
         Expanded(child: _buildField(l1, c1)),
         const SizedBox(width: 16),
         Expanded(child: _buildField(l2, c2)),
+      ],
+    );
+  }
+
+  Widget _buildDropdownLocalized(String label, String? value, Map<String, String> items, Function(String?) onChanged) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF3E2723))),
+        const SizedBox(height: 6),
+        DropdownButtonFormField<String>(
+          value: value,
+          decoration: const InputDecoration(filled: true, fillColor: Colors.white, contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14)),
+          items: items.entries.map((e) => DropdownMenuItem(value: e.key, child: Text(e.value))).toList(),
+          onChanged: onChanged,
+        ),
       ],
     );
   }
@@ -276,9 +307,8 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
       'shalwar_length': _shalwarLengthCont.text,
       'daman_type': _damanType,
       'front_pocket': _frontPocket,
-      'side_pocket': _sidePocket,
+      'pocket_type': _pocketType,
       'sleeve_type': _sleeveType,
-      'cuff': _cuff,
       'shalwar_pocket': _shalwarPocket,
       'ring_button': _ringButton,
       'double_silai': _doubleSilai,

@@ -54,5 +54,18 @@
   "updateStatus": "Update Status",
   "delete": "Delete",
   "deleteConfirm": "Are you sure you want to delete this customer?",
-  "deleteErrorOrders": "Cannot delete customer with active orders"
+  "deleteErrorOrders": "Cannot delete customer with active orders",
+  "ban": "Ban",
+  "golBan": "Gol Ban",
+  "none": "None",
+  "square": "Square",
+  "round": "Round",
+  "gol": "Gol",
+  "single": "Single",
+  "double": "Double",
+  "style": "Style",
+  "stitchingDetails": "Stitching & Details",
+  "settings": "Settings",
+  "appearance": "Appearance",
+  "language": "Language"
 }

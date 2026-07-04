@@ -176,4 +176,43 @@ class AppLocalizationsUr extends AppLocalizations {
   @override
   String get deleteErrorOrders =>
       'اس گاہک کو ختم نہیں کیا جا سکتا کیونکہ اس کے آرڈرز موجود ہیں۔';
+
+  @override
+  String get ban => 'بین';
+
+  @override
+  String get golBan => 'گول بین';
+
+  @override
+  String get none => 'کچھ نہیں';
+
+  @override
+  String get square => 'چورس';
+
+  @override
+  String get round => 'گول';
+
+  @override
+  String get gol => 'گول';
+
+  @override
+  String get single => 'سنگل';
+
+  @override
+  String get double => 'ڈبل';
+
+  @override
+  String get style => 'ڈیزائن';
+
+  @override
+  String get stitchingDetails => 'سلائی اور بٹن';
+
+  @override
+  String get settings => 'ترتیبات';
+
+  @override
+  String get appearance => 'ظاہری شکل';
+
+  @override
+  String get language => 'زبان';
 }
