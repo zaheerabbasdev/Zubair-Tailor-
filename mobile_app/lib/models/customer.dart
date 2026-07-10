@@ -26,4 +26,20 @@ class Customer {
       'address': address,
     };
   }
+
+  Customer copyWith({
+    int? id,
+    String? uniqueId,
+    String? name,
+    String? phone,
+    String? address,
+  }) {
+    return Customer(
+      id: id ?? this.id,
+      uniqueId: uniqueId ?? this.uniqueId,
+      name: name ?? this.name,
+      phone: phone ?? this.phone,
+      address: address ?? this.address,
+    );
+  }
 }

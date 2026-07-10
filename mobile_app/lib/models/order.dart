@@ -54,4 +54,32 @@ class Order {
       'image_url': imageUrl,
     };
   }
+
+  Order copyWith({
+    int? id,
+    int? customerId,
+    int? measurementId,
+    String? clothingType,
+    double? price,
+    DateTime? deliveryDate,
+    String? status,
+    String? notes,
+    String? imageUrl,
+    String? customerName,
+    String? customerPhone,
+  }) {
+    return Order(
+      id: id ?? this.id,
+      customerId: customerId ?? this.customerId,
+      measurementId: measurementId ?? this.measurementId,
+      clothingType: clothingType ?? this.clothingType,
+      price: price ?? this.price,
+      deliveryDate: deliveryDate ?? this.deliveryDate,
+      status: status ?? this.status,
+      notes: notes ?? this.notes,
+      imageUrl: imageUrl ?? this.imageUrl,
+      customerName: customerName ?? this.customerName,
+      customerPhone: customerPhone ?? this.customerPhone,
+    );
+  }
 }

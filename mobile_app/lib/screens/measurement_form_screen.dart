@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import '../l10n/app_localizations.dart';
 import '../models/customer.dart';
 import '../models/measurement.dart';
-import '../services/api_service.dart';
+import '../repositories/measurement_repository.dart';
 import '../utils/fraction_helper.dart';
 import '../utils/app_colors.dart';
 
@@ -12,9 +12,6 @@ class FractionFormatter extends TextInputFormatter {
   TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
     final converted = FractionHelper.convertToUnicode(newValue.text);
     if (converted != newValue.text) {
-      // If conversion happened, we need to adjust cursor position carefully
-      // But since we replace 3 chars with 1, it's tricky.
-      // For now, let's just use the converted text and place cursor at end.
       return TextEditingValue(
         text: converted,
         selection: TextSelection.collapsed(offset: converted.length),
@@ -34,7 +31,7 @@ class MeasurementFormScreen extends StatefulWidget {
 }
 
 class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
-  final ApiService _apiService = ApiService();
+  final MeasurementRepository _measurementRepository = MeasurementRepository();
   final _formKey = GlobalKey<FormState>();
 
   // Dimensions
@@ -53,10 +50,10 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
   String? _banType;
   String? _damanType;
   String? _sleeveType;
+  String? _pocketType;
 
   // Stitching & Details (Booleans)
   bool _frontPocket = false;
-  String? _pocketType;
   bool _shalwarPocket = false;
   bool _ringButton = false;
   bool _doubleSilai = false;
@@ -82,9 +79,9 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
     _banType = m?.banType;
     _damanType = m?.damanType;
     _sleeveType = m?.sleeveType;
+    _pocketType = m?.pocketType;
 
     _frontPocket = m?.frontPocket ?? false;
-    _pocketType = m?.pocketType;
     _shalwarPocket = m?.shalwarPocket ?? false;
     _ringButton = m?.ringButton ?? false;
     _doubleSilai = m?.doubleSilai ?? false;
@@ -99,80 +96,127 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: Text(l10n.measurements, style: const TextStyle(fontWeight: FontWeight.bold))),
+      appBar: AppBar(
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: AppColors.primaryGradient,
+          ),
+        ),
+        title: Text(
+          widget.measurement == null ? "Add Measurement" : "Edit Measurement",
+          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.check_rounded, color: Colors.white, size: 28),
+            onPressed: _submit,
+            tooltip: l10n.save,
+          )
+        ],
+      ),
       body: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
-            _buildSectionHeader(Icons.straighten, "Dimensions / لمبائی / چوڑائی"),
-            const SizedBox(height: 16),
-            _buildTwoFieldRow(l10n.shirtLength, _shirtLengthCont, l10n.shirtWidth, _shirtWidthCont),
-            const SizedBox(height: 12),
-            _buildTwoFieldRow(l10n.shoulder, _shoulderCont, l10n.sleeve, _sleeveCont),
-            const SizedBox(height: 12),
-            _buildTwoFieldRow(l10n.chest, _chestCont, l10n.ghera, _gheraCont),
-            const SizedBox(height: 12),
-            _buildTwoFieldRow(l10n.pancha, _panchaCont, l10n.shalwarLength, _shalwarLengthCont),
-            const SizedBox(height: 12),
-            _buildField(l10n.collar, _collarCont),
-
-            const SizedBox(height: 32),
-            _buildSectionHeader(Icons.style, l10n.style),
-            const SizedBox(height: 16),
-            _buildDropdownLocalized(l10n.banType, _banType, {
-              'ban': l10n.ban,
-              'gol_ban': l10n.golBan,
-              'none': l10n.none,
-            }, (v) => setState(() => _banType = v)),
-            const SizedBox(height: 12),
-            _buildDropdownLocalized(l10n.damanType, _damanType, {
-              'square': l10n.square,
-              'round': l10n.round,
-              'none': l10n.none,
-            }, (v) => setState(() => _damanType = v)),
-            const SizedBox(height: 12),
-            _buildDropdownLocalized(l10n.sleeveType, _sleeveType, {
-              'gol': l10n.gol,
-              'cuff': l10n.cuff,
-              'none': l10n.none,
-            }, (v) => setState(() => _sleeveType = v)),
-            const SizedBox(height: 12),
-            _buildDropdownLocalized(l10n.sidePocket, _pocketType, {
-              'single': l10n.single,
-              'double': l10n.double,
-              'none': l10n.none,
-            }, (v) => setState(() => _pocketType = v)),
-
-            const SizedBox(height: 32),
-            _buildSectionHeader(Icons.settings, l10n.stitchingDetails),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
+            _buildSectionCard(
+              icon: Icons.straighten_rounded,
+              title: "Dimensions / پیمائش",
               children: [
-                _buildSwitch(l10n.frontPocket, _frontPocket, (v) => setState(() => _frontPocket = v)),
-                _buildSwitch(l10n.shalwarPocket, _shalwarPocket, (v) => setState(() => _shalwarPocket = v)),
-                _buildSwitch(l10n.ringButton, _ringButton, (v) => setState(() => _ringButton = v)),
-                _buildSwitch(l10n.doubleSilai, _doubleSilai, (v) => setState(() => _doubleSilai = v)),
-                _buildSwitch(l10n.chamakTar, _chamakTar, (v) => setState(() => _chamakTar = v)),
-                _buildSwitch(l10n.sadaPatti, _sadaPatti, (v) => setState(() => _sadaPatti = v)),
-                _buildSwitch(l10n.designButton, _designButton, (v) => setState(() => _designButton = v)),
+                _buildTwoFieldRow(l10n.shirtLength, _shirtLengthCont, l10n.shirtWidth, _shirtWidthCont),
+                const SizedBox(height: 16),
+                _buildTwoFieldRow(l10n.shoulder, _shoulderCont, l10n.sleeve, _sleeveCont),
+                const SizedBox(height: 16),
+                _buildTwoFieldRow(l10n.chest, _chestCont, l10n.ghera, _gheraCont),
+                const SizedBox(height: 16),
+                _buildTwoFieldRow(l10n.pancha, _panchaCont, l10n.shalwarLength, _shalwarLengthCont),
+                const SizedBox(height: 16),
+                _buildField(l10n.collar, _collarCont),
               ],
             ),
-
-            const SizedBox(height: 32),
-            TextFormField(
-              controller: _notesCont,
-              maxLines: 3,
-              decoration: InputDecoration(labelText: l10n.notes, border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
+            const SizedBox(height: 20),
+            _buildSectionCard(
+              icon: Icons.style_rounded,
+              title: l10n.style,
+              children: [
+                _buildDropdownLocalized(l10n.banType, _banType, {
+                  'ban': l10n.ban,
+                  'gol_ban': l10n.golBan,
+                  'none': l10n.none,
+                }, (v) => setState(() => _banType = v)),
+                const SizedBox(height: 16),
+                _buildDropdownLocalized(l10n.damanType, _damanType, {
+                  'square': l10n.square,
+                  'round': l10n.round,
+                  'none': l10n.none,
+                }, (v) => setState(() => _damanType = v)),
+                const SizedBox(height: 16),
+                _buildDropdownLocalized(l10n.sleeveType, _sleeveType, {
+                  'gol': l10n.gol,
+                  'cuff': l10n.cuff,
+                  'none': l10n.none,
+                }, (v) => setState(() => _sleeveType = v)),
+                const SizedBox(height: 16),
+                _buildDropdownLocalized(l10n.sidePocket, _pocketType, {
+                  'single': l10n.single,
+                  'double': l10n.double,
+                  'none': l10n.none,
+                }, (v) => setState(() => _pocketType = v)),
+              ],
             ),
-
+            const SizedBox(height: 20),
+            _buildSectionCard(
+              icon: Icons.tune_rounded,
+              title: l10n.stitchingDetails,
+              children: [
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    _buildToggleChip(l10n.frontPocket, _frontPocket, (v) => setState(() => _frontPocket = v)),
+                    _buildToggleChip(l10n.shalwarPocket, _shalwarPocket, (v) => setState(() => _shalwarPocket = v)),
+                    _buildToggleChip(l10n.ringButton, _ringButton, (v) => setState(() => _ringButton = v)),
+                    _buildToggleChip(l10n.doubleSilai, _doubleSilai, (v) => setState(() => _doubleSilai = v)),
+                    _buildToggleChip(l10n.chamakTar, _chamakTar, (v) => setState(() => _chamakTar = v)),
+                    _buildToggleChip(l10n.sadaPatti, _sadaPatti, (v) => setState(() => _sadaPatti = v)),
+                    _buildToggleChip(l10n.designButton, _designButton, (v) => setState(() => _designButton = v)),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: AppColors.cardShadow,
+              ),
+              child: TextFormField(
+                controller: _notesCont,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  labelText: l10n.notes,
+                  alignLabelWithHint: true,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                ),
+              ),
+            ),
             const SizedBox(height: 40),
             ElevatedButton(
               onPressed: _submit,
-              style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 18), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
-              child: Text(l10n.save, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                backgroundColor: AppColors.primary,
+                shadowColor: AppColors.primary.withOpacity(0.4),
+                elevation: 4,
+              ),
+              child: Text(
+                l10n.save,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
             ),
             const SizedBox(height: 40),
           ],
@@ -181,13 +225,45 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
     );
   }
 
-  Widget _buildSectionHeader(IconData icon, String title) {
-    return Row(
-      children: [
-        Icon(icon, color: AppColors.primary, size: 24),
-        const SizedBox(width: 12),
-        Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
-      ],
+  Widget _buildSectionCard({
+    required IconData icon,
+    required String title,
+    required List<Widget> children,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: AppColors.cardShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: AppColors.primary, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
+              ),
+            ],
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 14),
+            child: Divider(color: Color(0xFFEEEEEE), height: 1),
+          ),
+          ...children,
+        ],
+      ),
     );
   }
 
@@ -196,17 +272,16 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF3E2723))),
+        Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textDark)),
         const SizedBox(height: 6),
         TextFormField(
           controller: controller,
-          textDirection: TextDirection.ltr, // Force LTR for numbers/fractions
+          textDirection: TextDirection.ltr,
           textAlign: isRtl ? TextAlign.right : TextAlign.left,
           decoration: InputDecoration(
-            // Remove labelText since it's outside
             filled: true,
-            fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+            fillColor: AppColors.background,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             suffixIcon: PopupMenuButton<String>(
               icon: const Icon(Icons.add_circle_outline, color: AppColors.accent),
               tooltip: 'Add Fraction',
@@ -236,7 +311,7 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
 
   Widget _buildTwoFieldRow(String l1, TextEditingController c1, String l2, TextEditingController c2) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start, // Align to top
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(child: _buildField(l1, c1)),
         const SizedBox(width: 16),
@@ -249,11 +324,17 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF3E2723))),
+        Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textDark)),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
           value: value,
-          decoration: const InputDecoration(filled: true, fillColor: Colors.white, contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14)),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: AppColors.background,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+          ),
           items: items.entries.map((e) => DropdownMenuItem(value: e.key, child: Text(e.value))).toList(),
           onChanged: onChanged,
         ),
@@ -261,68 +342,57 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
     );
   }
 
-  Widget _buildDropdown(String label, String? value, List<String> items, Function(String?) onChanged) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF3E2723))),
-        const SizedBox(height: 6),
-        DropdownButtonFormField<String>(
-          value: value,
-          decoration: const InputDecoration(filled: true, fillColor: Colors.white, contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14)),
-          items: items.map((i) => DropdownMenuItem(value: i, child: Text(i))).toList(),
-          onChanged: onChanged,
+  Widget _buildToggleChip(String label, bool value, Function(bool) onChanged) {
+    return ChoiceChip(
+      label: Text(
+        label,
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          color: value ? Colors.white : AppColors.textDark,
+          fontSize: 13,
         ),
-      ],
-    );
-  }
-
-  Widget _buildSwitch(String label, bool value, Function(bool) onChanged) {
-    return Container(
-      width: (MediaQuery.of(context).size.width - 64) / 2,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey.shade200)),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(child: Text(label, style: const TextStyle(fontSize: 14))),
-          Switch(value: value, onChanged: onChanged, activeColor: AppColors.primary),
-        ],
       ),
+      selected: value,
+      onSelected: onChanged,
+      selectedColor: AppColors.primary,
+      backgroundColor: AppColors.background,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      side: BorderSide(color: value ? AppColors.primary : Colors.grey.shade300, width: 1),
+      showCheckmark: false,
     );
   }
 
   void _submit() async {
-    final data = {
-      'customer_id': widget.customer.id,
-      'shirt_length': _shirtLengthCont.text,
-      'shirt_width': _shirtWidthCont.text,
-      'shoulder': _shoulderCont.text,
-      'sleeve': _sleeveCont.text,
-      'collar': _collarCont.text,
-      'ban_type': _banType,
-      'chest': _chestCont.text,
-      'ghera': _gheraCont.text,
-      'pancha': _panchaCont.text,
-      'shalwar_length': _shalwarLengthCont.text,
-      'daman_type': _damanType,
-      'front_pocket': _frontPocket,
-      'pocket_type': _pocketType,
-      'sleeve_type': _sleeveType,
-      'shalwar_pocket': _shalwarPocket,
-      'ring_button': _ringButton,
-      'double_silai': _doubleSilai,
-      'chamak_tar': _chamakTar,
-      'sada_patti': _sadaPatti,
-      'design_button': _designButton,
-      'notes': _notesCont.text,
-    };
+    final measurement = Measurement(
+      customerId: widget.customer.id!,
+      shirtLength: _shirtLengthCont.text,
+      shirtWidth: _shirtWidthCont.text,
+      shoulder: _shoulderCont.text,
+      sleeve: _sleeveCont.text,
+      collar: _collarCont.text,
+      banType: _banType,
+      chest: _chestCont.text,
+      ghera: _gheraCont.text,
+      pancha: _panchaCont.text,
+      shalwarLength: _shalwarLengthCont.text,
+      damanType: _damanType,
+      frontPocket: _frontPocket,
+      pocketType: _pocketType,
+      sleeveType: _sleeveType,
+      shalwarPocket: _shalwarPocket,
+      ringButton: _ringButton,
+      doubleSilai: _doubleSilai,
+      chamakTar: _chamakTar,
+      sadaPatti: _sadaPatti,
+      designButton: _designButton,
+      notes: _notesCont.text,
+    );
 
     try {
       if (widget.measurement == null) {
-        await _apiService.addMeasurement(data);
+        await _measurementRepository.add(measurement);
       } else {
-        await _apiService.updateMeasurement(widget.measurement!.id!, data);
+        await _measurementRepository.update(widget.measurement!.id!, measurement);
       }
       if (mounted) Navigator.pop(context);
     } catch (e) {

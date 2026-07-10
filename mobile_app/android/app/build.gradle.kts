@@ -16,7 +16,11 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "com.zubair.tailors"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // Pinned to the NDK version already fully downloaded on this machine
+    // (Sdk/ndk/25.2.9519653) to avoid repeated network-download corruption
+    // of newer versions on this network. Bump only once a newer NDK is
+    // confirmed to download cleanly end-to-end.
+    ndkVersion = "25.2.9519653"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

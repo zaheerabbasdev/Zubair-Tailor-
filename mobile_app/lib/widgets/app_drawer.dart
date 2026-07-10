@@ -13,54 +13,97 @@ class AppDrawer extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Drawer(
+      backgroundColor: AppColors.background,
       child: Column(
         children: [
           UserAccountsDrawerHeader(
-            decoration: const BoxDecoration(color: AppColors.primary),
-            accountName: Text(l10n.appName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-            accountEmail: const Text("Developed by Zubair Tech"),
-            currentAccountPicture: CircleAvatar(
-              backgroundColor: Colors.white,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Image.asset('assets/images/icon.png'),
+            decoration: const BoxDecoration(
+              gradient: AppColors.primaryGradient,
+            ),
+            accountName: Text(
+              l10n.appName,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22, letterSpacing: 1, color: Colors.white),
+            ),
+            accountEmail: const Text(
+              "Developed by Zubair Tech",
+              style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w500),
+            ),
+            currentAccountPicture: Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.12),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white24, width: 2),
+              ),
+              child: const Center(
+                child: Icon(Icons.content_cut_rounded, color: Colors.white, size: 36),
               ),
             ),
           ),
-          ListTile(
-            leading: const Icon(Icons.dashboard),
-            title: const Text('Dashboard'),
+          _buildDrawerItem(
+            icon: Icons.dashboard_rounded,
+            title: 'Dashboard',
             onTap: () => Navigator.pop(context),
           ),
-          ListTile(
-            leading: const Icon(Icons.people),
-            title: Text(l10n.totalCustomers),
+          _buildDrawerItem(
+            icon: Icons.people_alt_rounded,
+            title: l10n.totalCustomers,
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerListScreen()));
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.receipt),
-            title: Text(l10n.totalOrders),
+          _buildDrawerItem(
+            icon: Icons.receipt_long_rounded,
+            title: l10n.totalOrders,
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (_) => const OrderListScreen()));
             },
           ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.settings_outlined),
-            title: Text(l10n.settings),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Divider(color: Color(0xFFE5D5C5), height: 1),
+          ),
+          _buildDrawerItem(
+            icon: Icons.settings_rounded,
+            title: l10n.settings,
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
             },
           ),
           const Spacer(),
-          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 24),
+            child: Text(
+              "Version 1.0.0 (Premium)",
+              style: TextStyle(color: Colors.grey.shade500, fontSize: 12, fontWeight: FontWeight.bold),
+            ),
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDrawerItem({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(icon, color: AppColors.primary, size: 20),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark, fontSize: 14),
+      ),
+      onTap: onTap,
     );
   }
 }

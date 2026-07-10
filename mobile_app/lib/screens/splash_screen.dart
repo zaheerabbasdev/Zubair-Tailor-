@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../utils/app_colors.dart';
 import 'dashboard_screen.dart';
@@ -9,183 +10,198 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
+class _SplashScreenState extends State<SplashScreen>
+    with TickerProviderStateMixin {
+  late final AnimationController _logoCtrl;
+  late final AnimationController _textCtrl;
+  late final AnimationController _progressCtrl;
+
+  late final Animation<double> _logoScale;
+  late final Animation<double> _logoFade;
+  late final Animation<double> _textFade;
+  late final Animation<Offset> _textSlide;
+  late final Animation<double> _subtitleFade;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    );
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.6, curve: Curves.easeIn)),
-    );
+    _logoCtrl     = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
+    _textCtrl     = AnimationController(vsync: this, duration: const Duration(milliseconds: 700));
+    _progressCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1900));
 
-    _slideAnimation = Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.3, 1.0, curve: Curves.easeOutCubic)),
-    );
+    _logoScale = Tween<double>(begin: 0.3, end: 1.0)
+        .animate(CurvedAnimation(parent: _logoCtrl, curve: Curves.elasticOut));
+    _logoFade  = Tween<double>(begin: 0.0, end: 1.0)
+        .animate(CurvedAnimation(parent: _logoCtrl, curve: const Interval(0.0, 0.4, curve: Curves.easeIn)));
+    _textFade  = Tween<double>(begin: 0.0, end: 1.0)
+        .animate(CurvedAnimation(parent: _textCtrl, curve: Curves.easeIn));
+    _textSlide = Tween<Offset>(begin: const Offset(0, 0.4), end: Offset.zero)
+        .animate(CurvedAnimation(parent: _textCtrl, curve: Curves.easeOutCubic));
+    _subtitleFade = Tween<double>(begin: 0.0, end: 1.0)
+        .animate(CurvedAnimation(parent: _textCtrl, curve: const Interval(0.5, 1.0, curve: Curves.easeIn)));
 
-    _controller.forward();
+    _logoCtrl.forward().then((_) => _textCtrl.forward());
+    Future.delayed(const Duration(milliseconds: 400), () {
+      if (mounted) _progressCtrl.forward();
+    });
+
+    Timer(const Duration(milliseconds: 2800), () {
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => const DashboardScreen(),
+          transitionsBuilder: (_, anim, __, child) =>
+              FadeTransition(opacity: anim, child: child),
+          transitionDuration: const Duration(milliseconds: 500),
+        ),
+      );
+    });
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _logoCtrl.dispose();
+    _textCtrl.dispose();
+    _progressCtrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final isSmallScreen = size.width < 360;
-
     return Scaffold(
-      backgroundColor: AppColors.primary, // Deep Brown replaced with Primary
-      body: Stack(
-        children: [
-          // Background Decorative circles
-          Positioned(
-            top: -size.width * 0.25,
-            right: -size.width * 0.25,
-            child: Container(
-              width: size.width * 0.75,
-              height: size.width * 0.75,
-              decoration: BoxDecoration(
-                color: AppColors.accent.withValues(alpha: 0.05),
-                shape: BoxShape.circle,
-              ),
+      body: Container(
+        decoration: const BoxDecoration(gradient: AppColors.heroGradient),
+        child: Stack(
+          children: [
+            // Decorative orbs
+            Positioned(
+              top: -100, right: -100,
+              child: _orb(260, Colors.white.withOpacity(0.04)),
             ),
-          ),
-          Positioned(
-            bottom: -size.width * 0.125,
-            left: -size.width * 0.125,
-            child: Container(
-              width: size.width * 0.5,
-              height: size.width * 0.5,
-              decoration: BoxDecoration(
-                color: AppColors.accent.withValues(alpha: 0.05),
-                shape: BoxShape.circle,
-              ),
+            Positioned(
+              bottom: -120, left: -80,
+              child: _orb(320, AppColors.accent.withOpacity(0.06)),
             ),
-          ),
-          
-          SafeArea(
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: isSmallScreen ? 20.0 : 32.0, 
-                vertical: isSmallScreen ? 24.0 : 48.0,
-              ),
+            Positioned(
+              top: 120, left: -60,
+              child: _orb(180, Colors.white.withOpacity(0.03)),
+            ),
+
+            SafeArea(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Spacer(),
-                  FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: SlideTransition(
-                      position: _slideAnimation,
+                  const Spacer(flex: 2),
+
+                  // Logo orb
+                  ScaleTransition(
+                    scale: _logoScale,
+                    child: FadeTransition(
+                      opacity: _logoFade,
+                      child: Container(
+                        padding: const EdgeInsets.all(32),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withOpacity(0.08),
+                          border: Border.all(
+                              color: AppColors.accent.withOpacity(0.45), width: 1.5),
+                          boxShadow: [
+                            BoxShadow(
+                                color: AppColors.accent.withOpacity(0.18),
+                                blurRadius: 50,
+                                spreadRadius: 12),
+                          ],
+                        ),
+                        child: const Icon(Icons.content_cut_rounded,
+                            color: Colors.white, size: 64),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 52),
+
+                  // Brand text
+                  SlideTransition(
+                    position: _textSlide,
+                    child: FadeTransition(
+                      opacity: _textFade,
                       child: Column(
                         children: [
-                          Container(
-                            padding: EdgeInsets.all(isSmallScreen ? 16 : 24),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
-                              shape: BoxShape.circle,
-                              border: Border.all(color: const Color(0xFFD4AF37).withOpacity(0.5)),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFFD4AF37).withOpacity(0.2),
-                                  blurRadius: 30,
-                                  spreadRadius: 5,
-                                ),
-                              ],
-                            ),
-                            child: Image.asset(
-                              'assets/images/logo.png',
-                              width: size.width * 0.35,
-                              height: size.width * 0.35,
-                            ),
-                          ),
-                          SizedBox(height: isSmallScreen ? 32 : 48),
-                          Text(
-                            "ZUBAIR TAILORS",
-                            textAlign: TextAlign.center,
+                          const Text(
+                            'ZUBAIR',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: isSmallScreen ? 24 : 32,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 4,
+                              fontSize: 44,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 10,
                             ),
                           ),
-                          const SizedBox(height: 16),
                           Text(
-                            "The Art of Perfect Fit",
+                            'TAILORS',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.7),
-                              fontSize: isSmallScreen ? 14 : 18,
-                              letterSpacing: 2,
-                              fontStyle: FontStyle.italic,
+                              color: AppColors.accent,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 12,
                             ),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  const Spacer(),
+
+                  const SizedBox(height: 16),
+
                   FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pushReplacement(
-                            context,
-                            PageRouteBuilder(
-                              pageBuilder: (context, animation, secondaryAnimation) => const DashboardScreen(),
-                              transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                return FadeTransition(opacity: animation, child: child);
-                              },
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.accent,
-                          foregroundColor: AppColors.textDark,
-                          padding: EdgeInsets.symmetric(vertical: isSmallScreen ? 16 : 20),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+                    opacity: _subtitleFade,
+                    child: Text(
+                      'The Art of Perfect Fit',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.55),
+                        fontSize: 14,
+                        letterSpacing: 2.5,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+
+                  const Spacer(flex: 2),
+
+                  // Progress bar
+                  FadeTransition(
+                    opacity: _subtitleFade,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 80),
+                      child: AnimatedBuilder(
+                        animation: _progressCtrl,
+                        builder: (_, __) => ClipRRect(
+                          borderRadius: BorderRadius.circular(2),
+                          child: LinearProgressIndicator(
+                            value: _progressCtrl.value,
+                            backgroundColor: Colors.white.withOpacity(0.12),
+                            color: AppColors.accent,
+                            minHeight: 2,
                           ),
-                          elevation: 10,
-                          shadowColor: const Color(0xFFD4AF37).withOpacity(0.5),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "GET STARTED",
-                              style: TextStyle(
-                                fontSize: isSmallScreen ? 16 : 18,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 2,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            const Icon(Icons.arrow_forward_rounded),
-                          ],
                         ),
                       ),
                     ),
                   ),
+
+                  const SizedBox(height: 52),
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
+
+  Widget _orb(double size, Color color) => Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+      );
 }

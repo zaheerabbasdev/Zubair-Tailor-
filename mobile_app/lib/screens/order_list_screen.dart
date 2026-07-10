@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../models/order.dart';
-import '../services/api_service.dart';
+import '../repositories/order_repository.dart';
 import 'order_form_screen.dart';
 import '../utils/app_colors.dart';
 
@@ -13,9 +13,11 @@ class OrderListScreen extends StatefulWidget {
 }
 
 class _OrderListScreenState extends State<OrderListScreen> {
-  final ApiService _apiService = ApiService();
+  final OrderRepository _orderRepository = OrderRepository();
   List<Order> _orders = [];
+  List<Order> _filteredOrders = [];
   bool _isLoading = true;
+  String _selectedFilter = 'All';
 
   @override
   void initState() {
@@ -25,17 +27,32 @@ class _OrderListScreenState extends State<OrderListScreen> {
 
   Future<void> _fetchOrders() async {
     try {
-      final response = await _apiService.getOrders();
-      final List data = response.data;
-      setState(() {
-        _orders = data.map((e) => Order.fromJson(e)).toList();
-        _isLoading = false;
-      });
+      final data = await _orderRepository.getAll();
+      if (mounted) {
+        setState(() {
+          _orders = data;
+          _applyFilter(_selectedFilter);
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
+  }
+
+  void _applyFilter(String filter) {
+    setState(() {
+      _selectedFilter = filter;
+      if (filter == 'All') {
+        _filteredOrders = _orders;
+      } else {
+        _filteredOrders = _orders.where((o) => o.status == filter).toList();
+      }
+    });
   }
 
   @override
@@ -44,130 +61,303 @@ class _OrderListScreenState extends State<OrderListScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: Text(l10n.totalOrders, style: const TextStyle(fontWeight: FontWeight.bold))),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _fetchOrders,
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: _orders.length,
-                itemBuilder: (context, index) {
-                  final order = _orders[index];
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
+      appBar: AppBar(
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: AppColors.primaryGradient,
+          ),
+        ),
+        title: Text(l10n.totalOrders, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
+      body: Column(
+        children: [
+          // Filter Chips Row
+          Container(
+            height: 60,
+            color: Colors.white,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              children: ['All', 'Pending', 'In Progress', 'Ready', 'Delivered'].map((filter) {
+                final isSelected = _selectedFilter == filter;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: ChoiceChip(
+                    label: Text(
+                      filter,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: isSelected ? Colors.white : AppColors.textDark,
+                        fontSize: 13,
+                      ),
                     ),
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
-                                child: const Icon(Icons.shopping_bag_outlined, color: AppColors.primary),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      order.customerName ?? "Unknown / نامعلوم",
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Text(order.clothingType, style: const TextStyle(fontSize: 16, color: AppColors.primary, fontWeight: FontWeight.w500)),
-                                    const SizedBox(height: 4),
-                                    Text("${l10n.deliveryDate}: ${order.deliveryDate != null ? order.deliveryDate!.toString().split(' ')[0] : 'N/A'}", style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text("Rs. ${order.price}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.primary)),
-                                  const SizedBox(height: 8),
-                                  _buildStatusBadge(order.status, l10n),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Divider(height: 1),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              TextButton.icon(
-                                icon: Icon(Icons.edit_outlined, size: 20, color: order.status == 'Delivered' ? Colors.grey : AppColors.primary),
-                                label: Text(
-                                  "Update Status / اسٹیٹس تبدیل کریں",
-                                  style: TextStyle(color: order.status == 'Delivered' ? Colors.grey : AppColors.primary, fontWeight: FontWeight.bold),
-                                ),
-                                onPressed: order.status == 'Delivered' ? null : () => _showStatusUpdateDialog(order),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+                    selected: isSelected,
+                    onSelected: (selected) {
+                      if (selected) _applyFilter(filter);
+                    },
+                    selectedColor: AppColors.primary,
+                    backgroundColor: AppColors.background,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    side: BorderSide.none,
+                    showCheckmark: false,
+                  ),
+                );
+              }).toList(),
             ),
+          ),
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : RefreshIndicator(
+                    onRefresh: _fetchOrders,
+                    child: _filteredOrders.isEmpty
+                        ? _buildEmptyState(l10n)
+                        : ListView.builder(
+                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+                            itemCount: _filteredOrders.length,
+                            itemBuilder: (context, index) {
+                              final order = _filteredOrders[index];
+                              final statusColor = AppColors.statusColor(order.status);
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: AppColors.cardShadow,
+                                  border: Border.all(color: Colors.grey.shade100, width: 1),
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      border: Border(
+                                        left: BorderSide(color: statusColor, width: 5),
+                                      ),
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.all(16),
+                                          child: Row(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Container(
+                                                padding: const EdgeInsets.all(10),
+                                                decoration: BoxDecoration(
+                                                  color: AppColors.primary.withOpacity(0.08),
+                                                  borderRadius: BorderRadius.circular(12),
+                                                ),
+                                                child: const Icon(Icons.shopping_bag_outlined, color: AppColors.primary),
+                                              ),
+                                              const SizedBox(width: 16),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      order.customerName ?? "Unknown / نامعلوم",
+                                                      style: const TextStyle(
+                                                        fontWeight: FontWeight.bold,
+                                                        fontSize: 16,
+                                                        color: AppColors.textDark,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 6),
+                                                    Text(
+                                                      order.clothingType,
+                                                      style: const TextStyle(
+                                                        fontSize: 14,
+                                                        color: AppColors.primary,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 4),
+                                                    Row(
+                                                      children: [
+                                                        Icon(Icons.calendar_month_outlined, size: 14, color: Colors.grey.shade400),
+                                                        const SizedBox(width: 4),
+                                                        Text(
+                                                          "${l10n.deliveryDate}: ${order.deliveryDate != null ? order.deliveryDate!.toString().split(' ')[0] : 'N/A'}",
+                                                          style: TextStyle(color: Colors.grey.shade600, fontSize: 12, fontWeight: FontWeight.w500),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Column(
+                                                crossAxisAlignment: CrossAxisAlignment.end,
+                                                children: [
+                                                  Text(
+                                                    "Rs. ${order.price}",
+                                                    style: const TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 16,
+                                                      color: AppColors.textDark,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 8),
+                                                  _buildStatusBadge(order.status),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const Divider(height: 1, color: Color(0xFFEEEEEE)),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.end,
+                                            children: [
+                                              TextButton.icon(
+                                                icon: Icon(
+                                                  Icons.edit_road_rounded,
+                                                  size: 18,
+                                                  color: order.status == 'Delivered' ? Colors.grey : AppColors.primary,
+                                                ),
+                                                label: Text(
+                                                  "Update Status / اسٹیٹس تبدیل کریں",
+                                                  style: TextStyle(
+                                                    color: order.status == 'Delivered' ? Colors.grey : AppColors.primary,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 13,
+                                                  ),
+                                                ),
+                                                onPressed: order.status == 'Delivered' ? null : () => _showStatusUpdateDialog(order),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OrderFormScreen())).then((_) => _fetchOrders()),
         backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: Text(l10n.newOrder),
+        icon: const Icon(Icons.add_task_rounded, color: Colors.white),
+        label: Text(
+          l10n.newOrder,
+          style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.5, color: Colors.white),
+        ),
       ),
     );
   }
 
-  Widget _buildStatusBadge(String status, AppLocalizations l10n) {
-    Color color;
-    switch (status) {
-      case 'Pending': color = Colors.orange; break;
-      case 'In Progress': color = Colors.blue; break;
-      case 'Ready': color = Colors.green; break;
-      case 'Delivered': color = Colors.grey; break;
-      default: color = Colors.black;
-    }
+  Widget _buildEmptyState(AppLocalizations l10n) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        SizedBox(height: MediaQuery.of(context).size.height * 0.2),
+        Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey.shade400),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                "No ${_selectedFilter == 'All' ? '' : _selectedFilter} orders found",
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textDark,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "Tap the + button to create a new order",
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey.shade500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatusBadge(String status) {
+    final color = AppColors.statusColor(status);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(12)),
-      child: Text(status, style: const TextStyle(color: Colors.white, fontSize: 12)),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.2), width: 1),
+      ),
+      child: Text(
+        status,
+        style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold),
+      ),
     );
   }
 
   void _showStatusUpdateDialog(Order order) {
     final l10n = AppLocalizations.of(context)!;
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.updateStatus),
-        content: Column(
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: ['Pending', 'In Progress', 'Ready', 'Delivered'].map((s) => ListTile(
-            title: Text(s),
-            onTap: () async {
-              await _apiService.updateOrderStatus(order.id!, s);
-              if (mounted) {
-                Navigator.pop(context);
-                _fetchOrders();
-              }
-            },
-          )).toList(),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  l10n.updateStatus,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded),
+                  onPressed: () => Navigator.pop(context),
+                )
+              ],
+            ),
+            const SizedBox(height: 16),
+            ...['Pending', 'In Progress', 'Ready', 'Delivered'].map((status) {
+              final statusColor = AppColors.statusColor(status);
+              return ListTile(
+                leading: Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(color: statusColor, shape: BoxShape.circle),
+                ),
+                title: Text(status, style: const TextStyle(fontWeight: FontWeight.bold)),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                onTap: () async {
+                  await _orderRepository.updateStatus(order.id!, status);
+                  if (mounted) {
+                    Navigator.pop(context);
+                    _fetchOrders();
+                  }
+                },
+              );
+            }),
+          ],
         ),
       ),
     );
