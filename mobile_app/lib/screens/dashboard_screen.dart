@@ -59,178 +59,89 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(),
+      appBar: AppBar(
+        backgroundColor: AppColors.primary,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: _fetchSummary,
-              child: CustomScrollView(
-                slivers: [
-                  // Premium Hero Header
-                  SliverAppBar(
-                    expandedHeight: 220,
-                    pinned: true,
-                    stretch: true,
-                    backgroundColor: AppColors.primary,
-                    leading: Builder(
-                      builder: (context) => IconButton(
-                        icon: const Icon(Icons.menu_rounded, color: Colors.white),
-                        onPressed: () => Scaffold.of(context).openDrawer(),
-                      ),
-                    ),
-                    flexibleSpace: FlexibleSpaceBar(
-                      background: Container(
-                        decoration: const BoxDecoration(
-                          gradient: AppColors.heroGradient,
-                        ),
-                        child: Stack(
-                          children: [
-                            Positioned(
-                              right: -40,
-                              bottom: -20,
-                              child: Icon(
-                                Icons.design_services_outlined,
-                                size: 180,
-                                color: Colors.white.withOpacity(0.05),
-                              ),
-                            ),
-                            SafeArea(
-                              child: Padding(
-                                padding: const EdgeInsets.all(24.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    const Text(
-                                      "Welcome back,",
-                                      style: TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      l10n.appName,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 28,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 0.5,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.accent.withOpacity(0.2),
-                                        borderRadius: BorderRadius.circular(20),
-                                        border: Border.all(color: AppColors.accent.withOpacity(0.4)),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const Icon(Icons.star_rounded, color: AppColors.accent, size: 14),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            "Premium Atelier Edition",
-                                            style: TextStyle(
-                                              color: AppColors.accentLight,
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
+                children: [
+                  // Quick Action Buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildActionButton(
+                          context,
+                          l10n.addCustomer,
+                          Icons.person_add_rounded,
+                          AppColors.primary,
+                          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerListScreen())).then((_) => _fetchSummary()),
                         ),
                       ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildActionButton(
+                          context,
+                          l10n.newOrder,
+                          Icons.add_task_rounded,
+                          AppColors.secondary,
+                          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OrderListScreen())).then((_) => _fetchSummary()),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        l10n.status,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textDark,
+                        ),
+                      ),
+                      Icon(Icons.analytics_outlined, color: Colors.grey.shade400, size: 20),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Stats Grid (Premium Cards)
+                  _buildStatsGrid(),
+                  const SizedBox(height: 32),
+
+                  const Text(
+                    "Navigation",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textDark,
                     ),
                   ),
+                  const SizedBox(height: 12),
 
-                  // Content
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
-                    sliver: SliverList(
-                      delegate: SliverChildListDelegate([
-                        // Quick Action Buttons
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildActionButton(
-                                context,
-                                l10n.addCustomer,
-                                Icons.person_add_rounded,
-                                AppColors.primary,
-                                () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerListScreen())).then((_) => _fetchSummary()),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: _buildActionButton(
-                                context,
-                                l10n.newOrder,
-                                Icons.add_task_rounded,
-                                AppColors.secondary,
-                                () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OrderListScreen())).then((_) => _fetchSummary()),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 32),
-
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              l10n.status,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textDark,
-                              ),
-                            ),
-                            Icon(Icons.analytics_outlined, color: Colors.grey.shade400, size: 20),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Stats Grid (Premium Cards)
-                        _buildStatsGrid(),
-                        const SizedBox(height: 32),
-
-                        const Text(
-                          "Navigation",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textDark,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-
-                        // Premium Navigation Cards
-                        _buildNavigationItem(
-                          context,
-                          l10n.totalCustomers,
-                          Icons.people_alt_rounded,
-                          Colors.blue.shade700,
-                          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerListScreen())),
-                        ),
-                        const SizedBox(height: 12),
-                        _buildNavigationItem(
-                          context,
-                          l10n.totalOrders,
-                          Icons.receipt_long_rounded,
-                          const Color(0xFF5D4037),
-                          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OrderListScreen())),
-                        ),
-                      ]),
-                    ),
+                  // Premium Navigation Cards
+                  _buildNavigationItem(
+                    context,
+                    l10n.totalCustomers,
+                    Icons.people_alt_rounded,
+                    Colors.blue.shade700,
+                    () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerListScreen())),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildNavigationItem(
+                    context,
+                    l10n.totalOrders,
+                    Icons.receipt_long_rounded,
+                    const Color(0xFF5D4037),
+                    () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OrderListScreen())),
                   ),
                 ],
               ),
