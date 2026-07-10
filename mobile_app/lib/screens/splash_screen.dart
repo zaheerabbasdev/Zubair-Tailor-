@@ -114,8 +114,15 @@ class _SplashScreenState extends State<SplashScreen>
                                 spreadRadius: 12),
                           ],
                         ),
-                        child: const Icon(Icons.content_cut_rounded,
-                            color: Colors.white, size: 64),
+                        child: const Padding(
+                          padding: EdgeInsets.all(4),
+                          child: Image(
+                            image: AssetImage('assets/images/icon.png'),
+                            width: 64,
+                            height: 64,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
                       ),
                     ),
                   ),

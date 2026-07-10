@@ -35,7 +35,13 @@ class AppDrawer extends StatelessWidget {
                 border: Border.all(color: Colors.white24, width: 2),
               ),
               child: const Center(
-                child: Icon(Icons.content_cut_rounded, color: Colors.white, size: 36),
+                child: Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Image(
+                    image: AssetImage('assets/images/icon.png'),
+                    fit: BoxFit.contain,
+                  ),
+                ),
               ),
             ),
           ),
