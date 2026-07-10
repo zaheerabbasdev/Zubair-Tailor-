@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/app_colors.dart';
+import '../providers/backup_provider.dart';
 import '../providers/locale_provider.dart';
 import '../repositories/customer_repository.dart';
 import '../repositories/order_repository.dart';
@@ -26,6 +27,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     _fetchSummary();
+    context.read<BackupProvider>().maybeAutoBackup();
   }
 
   Future<void> _fetchSummary() async {

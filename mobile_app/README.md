@@ -9,12 +9,14 @@ A Flutter app for managing a tailoring shop's customers, measurements, and order
 - **Orders** — create orders linking a customer to one of their measurements, track clothing type, price, delivery date, and status (Pending → In Progress → Ready → Delivered), with search/filter by status.
 - **Dashboard** — at-a-glance counts of customers, total orders, pending orders, and ready orders.
 - **Settings** — switch between English and Urdu at any time; the choice is persisted.
+- **Backup & Restore** — connect a Google account once, and the app automatically backs up the database to a visible "Zubair Tailors Backups" folder in that Google Drive whenever the app is opened and more than 24 hours have passed since the last backup. Manual "Back Up Now" and "Restore Backup" buttons are also available in Settings. This is what protects your data if the phone is lost, stolen, or breaks — see [Setting up Google Drive backup](#setting-up-google-drive-backup) below, which you must complete once before it will work.
 
 ## Tech stack
 
 - **Flutter** (Material 3)
 - **sqflite** for local persistence (`lib/db/database_helper.dart` + `lib/repositories/`), with `sqflite_common_ffi` and `sqlite3_flutter_libs` so the same code also runs on Windows/Linux desktop for local testing. Android and iOS use the native `sqflite` plugin directly.
-- **provider** for app-wide state (currently the selected locale)
+- **provider** for app-wide state (locale, Google Drive backup status)
+- **google_sign_in** + **googleapis** (`drive/v3`) for Google Drive backup/restore (`lib/services/backup_service.dart`, `lib/providers/backup_provider.dart`)
 - **flutter_localizations** / `.arb` files for English + Urdu strings (see `l10n.yaml`)
 - **image_picker**, **path_provider** for photo attachments (see Known limitations)
 
@@ -25,7 +27,8 @@ lib/
   db/            DatabaseHelper — schema definition and SQLite connection
   models/        Customer, Measurement, Order (plain Dart classes with toJson/fromJson/copyWith)
   repositories/  CustomerRepository, MeasurementRepository, OrderRepository — all SQL lives here
-  providers/     LocaleProvider (ChangeNotifier)
+  services/      BackupService — Google Drive backup/restore mechanics
+  providers/     LocaleProvider, BackupProvider (ChangeNotifiers)
   screens/       One file per screen (dashboard, customer list/detail, measurement form, order list/form, settings, splash)
   widgets/       Shared widgets (app drawer, add-customer sheet)
   utils/         AppColors (design tokens), FractionHelper (unicode fraction input for measurements)
@@ -62,6 +65,34 @@ Add new keys to `lib/l10n/app_en.arb` and `lib/l10n/app_ur.arb`, then regenerate
 ```bash
 flutter gen-l10n
 ```
+
+### Setting up Google Drive backup
+
+The app's backup code talks to a Google Cloud project that you must create yourself — this is a one-time setup:
+
+1. Go to [console.cloud.google.com](https://console.cloud.google.com) → create/select a project (e.g. "Zubair Tailors").
+2. **APIs & Services → Library** → search "Google Drive API" → **Enable**.
+3. **APIs & Services → OAuth consent screen**:
+   - User type: **External**.
+   - App name "Zubair Tailors", support/developer email = your Google account.
+   - Scopes: add only `https://www.googleapis.com/auth/drive.file` (the app can only see files it creates itself — not your whole Drive). This is a *sensitive*, not *restricted*, scope, so it never needs Google's formal review.
+   - Test users: add your own Google account.
+   - Publishing status: leave as **Testing** to start (test-user sessions expire after 7 days of inactivity, forcing a quick re-login — harmless). Once you've confirmed backup/restore works, switch to **In production**; `drive.file` doesn't require review to do this as long as you stay under Google's 100-user cap for unverified apps, which a single shop easily does. Users just see a one-time "Google hasn't verified this app" click-through, then it works normally with no more 7-day expiry.
+4. **APIs & Services → Credentials → Create Credentials → OAuth client ID → Android**, package name `com.zubair.tailors`. Google allows only one SHA-1 fingerprint per Android client, so create **two** client entries:
+   - **Debug**: run
+     ```
+     keytool -list -v -keystore %USERPROFILE%\.android\debug.keystore -alias androiddebugkey -storepass android -keypass android
+     ```
+     and copy the `SHA1:` value.
+   - **Release**: open `android/key.properties` yourself for the `storeFile` and `keyAlias` values (don't share the password with anyone), then run
+     ```
+     keytool -list -v -keystore <storeFile path> -alias <keyAlias>
+     ```
+     entering the password when prompted, and copy the `SHA1:` value.
+   - No client secret and no `google-services.json` are needed (this app doesn't use Firebase).
+5. If you later publish to the Play Store, also add the Play App Signing SHA-1 (Play Console → Setup → App integrity) as a third Android client entry.
+
+Once the OAuth clients exist with the correct SHA-1s registered, no app code or config string needs to change — `google_sign_in` resolves the right client automatically from the package name + SHA-1 match at runtime. Test via Settings → Connect Google Account.
 
 ## Known limitations
 

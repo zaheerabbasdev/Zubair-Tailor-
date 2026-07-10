@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:googleapis/drive/v3.dart' as drive;
 import '../l10n/app_localizations.dart';
+import '../providers/backup_provider.dart';
 import '../providers/locale_provider.dart';
 import '../utils/app_colors.dart';
+import 'dashboard_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -53,6 +56,13 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+
+          const SizedBox(height: 32),
+          _buildSectionHeader(context, "Backup & Restore", Icons.cloud_outlined),
+          const SizedBox(height: 12),
+          Consumer<BackupProvider>(
+            builder: (context, backup, _) => _buildBackupCard(context, backup),
           ),
 
           const SizedBox(height: 32),
@@ -166,6 +176,214 @@ class SettingsScreen extends StatelessWidget {
           style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark, fontSize: 13),
         ),
       ],
+    );
+  }
+
+  Widget _buildBackupCard(BuildContext context, BackupProvider backup) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: AppColors.cardShadow,
+        border: Border.all(color: Colors.grey.shade100, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (!backup.isSignedIn) ...[
+            const Text(
+              "Connect your Google account to automatically back up your customers, measurements, and orders to Google Drive.",
+              style: TextStyle(color: AppColors.textMedium, fontSize: 13, height: 1.4),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: backup.isBusy ? null : () => backup.signIn(),
+              icon: const Icon(Icons.login_rounded, size: 18),
+              label: Text(backup.isBusy ? "Connecting..." : "Connect Google Account"),
+            ),
+          ] else ...[
+            _buildInfoRow("Account", backup.accountEmail ?? "-"),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 10),
+              child: Divider(color: Color(0xFFEEEEEE), height: 1),
+            ),
+            _buildInfoRow("Last Backup", _formatLastBackup(backup.lastBackupAt)),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: backup.isBusy ? null : () => _backupNow(context, backup),
+              icon: backup.isBusy
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Icon(Icons.backup_rounded, size: 18),
+              label: Text(backup.isBusy ? "Working..." : "Back Up Now"),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: backup.isBusy ? null : () => _showRestoreSheet(context, backup),
+                    icon: const Icon(Icons.restore_rounded, size: 18),
+                    label: const Text("Restore Backup"),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                TextButton(
+                  onPressed: backup.isBusy ? null : () => backup.signOut(),
+                  child: const Text("Disconnect"),
+                ),
+              ],
+            ),
+          ],
+          if (backup.errorMessage != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              backup.errorMessage!,
+              style: const TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  String _formatLastBackup(DateTime? time) {
+    if (time == null) return "Never";
+    final diff = DateTime.now().difference(time);
+    if (diff.inMinutes < 1) return "Just now";
+    if (diff.inMinutes < 60) return "${diff.inMinutes}m ago";
+    if (diff.inHours < 24) return "${diff.inHours}h ago";
+    return "${diff.inDays}d ago";
+  }
+
+  String _formatFullDate(DateTime dt) {
+    final local = dt.toLocal();
+    String pad(int n) => n.toString().padLeft(2, '0');
+    return '${local.year}-${pad(local.month)}-${pad(local.day)} ${pad(local.hour)}:${pad(local.minute)}';
+  }
+
+  Future<void> _backupNow(BuildContext context, BackupProvider backup) async {
+    await backup.backupNow();
+    if (!context.mounted) return;
+    if (backup.errorMessage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Backup completed successfully")),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Backup failed: ${backup.errorMessage}")),
+      );
+    }
+  }
+
+  Future<void> _showRestoreSheet(BuildContext context, BackupProvider backup) async {
+    List<drive.File> backups;
+    try {
+      backups = await backup.listBackups();
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to load backups: $e")),
+        );
+      }
+      return;
+    }
+
+    if (!context.mounted) return;
+
+    if (backups.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No backups found yet")),
+      );
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Restore Backup",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark),
+              ),
+              const SizedBox(height: 16),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 360),
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: backups.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (itemContext, index) {
+                    final file = backups[index];
+                    final created = file.createdTime;
+                    return ListTile(
+                      leading: const Icon(Icons.description_outlined, color: AppColors.primary),
+                      title: Text(created != null ? _formatFullDate(created) : (file.name ?? 'Backup')),
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () {
+                        Navigator.pop(sheetContext);
+                        _confirmRestore(context, backup, file);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmRestore(BuildContext context, BackupProvider backup, drive.File file) async {
+    final created = file.createdTime;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text("Restore this backup?"),
+        content: Text(
+          "This will overwrite all local data with the backup from "
+          "${created != null ? _formatFullDate(created) : 'this backup'}. This cannot be undone.",
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text("Cancel")),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text("Restore"),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) return;
+    if (file.id == null) return;
+
+    await backup.restoreFrom(file.id!);
+    if (!context.mounted) return;
+
+    if (backup.errorMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Restore failed: ${backup.errorMessage}")),
+      );
+      return;
+    }
+
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const DashboardScreen()),
+      (route) => false,
     );
   }
 }

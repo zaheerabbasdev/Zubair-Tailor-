@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'l10n/app_localizations.dart';
+import 'providers/backup_provider.dart';
 import 'providers/locale_provider.dart';
 import 'screens/splash_screen.dart';
 import 'utils/app_colors.dart';
@@ -21,6 +22,7 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => LocaleProvider()),
+        ChangeNotifierProvider(create: (_) => BackupProvider()..init()),
       ],
       child: const MyApp(),
     ),

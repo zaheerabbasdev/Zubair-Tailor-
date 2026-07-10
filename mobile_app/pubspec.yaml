@@ -45,6 +45,9 @@ dependencies:
   sqflite: ^2.3.0
   sqflite_common_ffi: ^2.3.0
   sqlite3_flutter_libs: ^0.5.24
+  google_sign_in: ^6.2.2
+  googleapis: ^13.2.0
+  extension_google_sign_in_as_googleapis_auth: ^2.0.1
 
 dev_dependencies:
   flutter_test:

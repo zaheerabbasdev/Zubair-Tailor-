@@ -9,9 +9,17 @@ class DatabaseHelper {
 
   Future<Database> get database async => _db ??= await _initDb();
 
+  Future<String> get databasePath async =>
+      join(await getDatabasesPath(), 'zubair_tailors.db');
+
+  Future<void> close() async {
+    final db = _db;
+    _db = null;
+    if (db != null) await db.close();
+  }
+
   Future<Database> _initDb() async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, 'zubair_tailors.db');
+    final path = await databasePath;
     return openDatabase(
       path,
       version: 1,
