@@ -157,6 +157,8 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                                   children: [
                                                     Text(
                                                       order.customerName ?? "Unknown / نامعلوم",
+                                                      overflow: TextOverflow.ellipsis,
+                                                      maxLines: 1,
                                                       style: const TextStyle(
                                                         fontWeight: FontWeight.bold,
                                                         fontSize: 16,
@@ -166,6 +168,8 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                                     const SizedBox(height: 6),
                                                     Text(
                                                       order.clothingType,
+                                                      overflow: TextOverflow.ellipsis,
+                                                      maxLines: 1,
                                                       style: const TextStyle(
                                                         fontSize: 14,
                                                         color: AppColors.primary,
@@ -177,9 +181,13 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                                       children: [
                                                         Icon(Icons.calendar_month_outlined, size: 14, color: Colors.grey.shade400),
                                                         const SizedBox(width: 4),
-                                                        Text(
-                                                          "${l10n.deliveryDate}: ${order.deliveryDate != null ? order.deliveryDate!.toString().split(' ')[0] : 'N/A'}",
-                                                          style: TextStyle(color: Colors.grey.shade600, fontSize: 12, fontWeight: FontWeight.w500),
+                                                        Expanded(
+                                                          child: Text(
+                                                            "${l10n.deliveryDate}: ${order.deliveryDate != null ? order.deliveryDate!.toString().split(' ')[0] : 'N/A'}",
+                                                            overflow: TextOverflow.ellipsis,
+                                                            maxLines: 1,
+                                                            style: TextStyle(color: Colors.grey.shade600, fontSize: 12, fontWeight: FontWeight.w500),
+                                                          ),
                                                         ),
                                                       ],
                                                     ),
