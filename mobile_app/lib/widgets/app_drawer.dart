@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/app_colors.dart';
 import '../screens/customer_list_screen.dart';
@@ -93,6 +94,14 @@ class AppDrawer extends StatelessWidget {
             },
           ),
           _buildDrawerItem(
+            icon: Icons.apps_rounded,
+            title: "More Apps",
+            onTap: () {
+              Navigator.pop(context);
+              _openMoreApps(context);
+            },
+          ),
+          _buildDrawerItem(
             icon: Icons.exit_to_app_rounded,
             title: "Exit",
             onTap: () => _confirmExit(context),
@@ -115,6 +124,16 @@ class AppDrawer extends StatelessWidget {
       "Check out Zubair Tailors — manage your tailoring shop's customers, "
       "measurements, and orders. https://play.google.com/store/apps/details?id=com.zubair.tailors",
     );
+  }
+
+  Future<void> _openMoreApps(BuildContext context) async {
+    final uri = Uri.parse('https://play.google.com/store/apps/dev?id=Zubair+Tech');
+    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!launched && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Couldn't open the Play Store")),
+      );
+    }
   }
 
   void _confirmExit(BuildContext context) {
