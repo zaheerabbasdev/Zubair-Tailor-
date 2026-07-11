@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/app_colors.dart';
 import '../screens/customer_list_screen.dart';
@@ -78,6 +80,23 @@ class AppDrawer extends StatelessWidget {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
             },
           ),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Divider(color: Color(0xFFE5D5C5), height: 1),
+          ),
+          _buildDrawerItem(
+            icon: Icons.share_rounded,
+            title: "Share App",
+            onTap: () {
+              Navigator.pop(context);
+              _shareApp();
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.exit_to_app_rounded,
+            title: "Exit",
+            onTap: () => _confirmExit(context),
+          ),
           const Spacer(),
           Padding(
             padding: const EdgeInsets.only(bottom: 24),
@@ -85,6 +104,39 @@ class AppDrawer extends StatelessWidget {
               "Version 1.0.0 (Premium)",
               style: TextStyle(color: Colors.grey.shade500, fontSize: 12, fontWeight: FontWeight.bold),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _shareApp() {
+    Share.share(
+      "Check out Zubair Tailors — manage your tailoring shop's customers, "
+      "measurements, and orders. https://play.google.com/store/apps/details?id=com.zubair.tailors",
+    );
+  }
+
+  void _confirmExit(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text("Exit App", style: TextStyle(fontWeight: FontWeight.bold)),
+        content: const Text("Are you sure you want to exit?"),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text("Cancel", style: TextStyle(color: Colors.grey.shade600)),
+          ),
+          ElevatedButton(
+            onPressed: () => SystemNavigator.pop(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red.shade700,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text("Exit"),
           ),
         ],
       ),
