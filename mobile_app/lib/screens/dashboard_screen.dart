@@ -27,7 +27,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     _fetchSummary();
-    context.read<BackupProvider>().maybeAutoBackup();
+    context.read<BackupProvider>().autoBackupOnOpen();
   }
 
   Future<void> _fetchSummary() async {

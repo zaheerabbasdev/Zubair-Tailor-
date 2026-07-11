@@ -9,7 +9,7 @@ A Flutter app for managing a tailoring shop's customers, measurements, and order
 - **Orders** — create orders linking a customer to one of their measurements, track clothing type, price, delivery date, and status (Pending → In Progress → Ready → Delivered), with search/filter by status.
 - **Dashboard** — at-a-glance counts of customers, total orders, pending orders, and ready orders.
 - **Settings** — switch between English and Urdu at any time; the choice is persisted.
-- **Backup & Restore** — connect a Google account once, and the app automatically backs up the database to a visible "Zubair Tailors Backups" folder in that Google Drive whenever the app is opened and more than 24 hours have passed since the last backup. Manual "Back Up Now" and "Restore Backup" buttons are also available in Settings. This is what protects your data if the phone is lost, stolen, or breaks — see [Setting up Google Drive backup](#setting-up-google-drive-backup) below, which you must complete once before it will work.
+- **Backup & Restore** — connect a Google account once, and the app automatically backs up the database to a visible "Zubair Tailors Backups" folder in that Google Drive every time the app is opened, so Drive stays in sync with whatever local changes were made since the app was last used. Manual "Back Up Now" and "Restore Backup" buttons are also available in Settings for an on-demand backup or to roll back to an earlier one. This is what protects your data if the phone is lost, stolen, or breaks — see [Setting up Google Drive backup](#setting-up-google-drive-backup) below, which you must complete once before it will work.
 
 ## Tech stack
 

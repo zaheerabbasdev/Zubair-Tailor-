@@ -74,15 +74,24 @@ class BackupProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> maybeAutoBackup() async {
+  /// Backs up on every app open (while signed in), keeping Drive in sync
+  /// with whatever local changes have been made since the app was last used.
+  Future<void> autoBackupOnOpen() async {
     if (isBusy) return;
-    final last = await _service.lastBackupAt();
-    final due = last == null || DateTime.now().difference(last) > BackupService.autoBackupInterval;
-    if (!due) return;
 
     final account = await _service.signInSilently();
     if (account == null) return;
 
     await backupNow();
+  }
+
+  /// Fire-and-forget backup triggered right after a customer/measurement/order
+  /// is created, updated, or deleted, so Drive stays in sync with in-app
+  /// changes as they happen rather than only when the app is reopened.
+  /// Silent by design: a transient network hiccup here shouldn't interrupt
+  /// the user's current action with an error dialog.
+  void syncInBackground() {
+    if (isBusy || !isSignedIn) return;
+    backupNow();
   }
 }

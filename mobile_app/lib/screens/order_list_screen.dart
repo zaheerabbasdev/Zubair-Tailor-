@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/order.dart';
+import '../providers/backup_provider.dart';
 import '../repositories/order_repository.dart';
 import 'order_form_screen.dart';
 import '../utils/app_colors.dart';
@@ -359,6 +361,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                 onTap: () async {
                   await _orderRepository.updateStatus(order.id!, status);
                   if (mounted) {
+                    context.read<BackupProvider>().syncInBackground();
                     Navigator.pop(context);
                     _fetchOrders();
                   }

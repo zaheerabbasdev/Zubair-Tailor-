@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/customer.dart';
 import '../models/measurement.dart';
+import '../providers/backup_provider.dart';
 import '../repositories/customer_repository.dart';
 import '../repositories/measurement_repository.dart';
 import 'measurement_form_screen.dart';
@@ -155,6 +157,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
               try {
                 await _customerRepository.delete(widget.customer.id!);
                 if (mounted) {
+                  context.read<BackupProvider>().syncInBackground();
                   Navigator.pop(ctx);
                   Navigator.pop(context);
                 }

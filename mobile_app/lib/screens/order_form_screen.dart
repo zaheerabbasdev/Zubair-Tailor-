@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/customer.dart';
 import '../models/measurement.dart';
 import '../models/order.dart';
+import '../providers/backup_provider.dart';
 import '../repositories/customer_repository.dart';
 import '../repositories/measurement_repository.dart';
 import '../repositories/order_repository.dart';
@@ -248,7 +250,10 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
 
     try {
       await _orderRepository.create(order);
-      if (mounted) Navigator.pop(context);
+      if (mounted) {
+        context.read<BackupProvider>().syncInBackground();
+        Navigator.pop(context);
+      }
     } catch (e) {
       if (mounted) {
         setState(() => _isSaving = false);

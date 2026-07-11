@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/customer.dart';
+import '../providers/backup_provider.dart';
 import '../repositories/customer_repository.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/app_colors.dart';
@@ -40,6 +42,7 @@ class _AddCustomerSheetState extends State<AddCustomerSheet> {
       ));
 
       if (mounted) {
+        context.read<BackupProvider>().syncInBackground();
         Navigator.pop(context, true); // Return true to indicate success
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Customer added successfully!')),

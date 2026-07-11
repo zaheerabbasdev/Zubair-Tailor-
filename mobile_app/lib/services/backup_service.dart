@@ -10,7 +10,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../db/database_helper.dart';
 
 class BackupService {
-  static const autoBackupInterval = Duration(hours: 24);
   static const _kFolderIdKey = 'drive_backup_folder_id';
   static const _kLastBackupAtKey = 'last_backup_at';
   static const _folderName = 'Zubair Tailors Backups';

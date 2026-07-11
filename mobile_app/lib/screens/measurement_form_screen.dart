@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/customer.dart';
 import '../models/measurement.dart';
+import '../providers/backup_provider.dart';
 import '../repositories/measurement_repository.dart';
 import '../utils/fraction_helper.dart';
 import '../utils/app_colors.dart';
@@ -394,7 +396,10 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
       } else {
         await _measurementRepository.update(widget.measurement!.id!, measurement);
       }
-      if (mounted) Navigator.pop(context);
+      if (mounted) {
+        context.read<BackupProvider>().syncInBackground();
+        Navigator.pop(context);
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
