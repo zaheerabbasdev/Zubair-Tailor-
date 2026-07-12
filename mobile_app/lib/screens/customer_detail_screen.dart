@@ -381,6 +381,12 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     );
   }
 
+  static final _compactActionButtonStyle = TextButton.styleFrom(
+    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+    minimumSize: Size.zero,
+    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+  );
+
   Widget _buildOrderCard(Order o) {
     final statusColor = AppColors.statusColor(o.status);
     final due = o.price - o.amountPaid;
@@ -399,7 +405,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           decoration: BoxDecoration(
             border: Border(left: BorderSide(color: statusColor, width: 5)),
           ),
-          child: Padding(
+          child: Column(
+            children: [
+          Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -476,63 +484,60 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                     ],
                   ),
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: statusColor.withOpacity(0.2), width: 1),
-                      ),
-                      child: Text(
-                        o.status,
-                        style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.chat_rounded, size: 18, color: AppColors.primary),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          onPressed: () => sendWhatsAppMessage(
-                            context,
-                            phone: _customer.phone,
-                            message: buildOrderStatusMessage(
-                              customerName: _customer.name,
-                              clothingType: o.clothingType,
-                              status: o.status,
-                            ),
-                          ),
-                          tooltip: "WhatsApp",
-                        ),
-                        const SizedBox(width: 12),
-                        IconButton(
-                          icon: const Icon(Icons.receipt_rounded, size: 18, color: AppColors.primary),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          onPressed: () => InvoiceService.generateAndShareInvoice(o),
-                          tooltip: "Invoice",
-                        ),
-                        const SizedBox(width: 12),
-                        IconButton(
-                          icon: const Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => OrderFormScreen(order: o)),
-                          ).then((_) => _fetchData()),
-                        ),
-                      ],
-                    ),
-                  ],
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: statusColor.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: statusColor.withOpacity(0.2), width: 1),
+                  ),
+                  child: Text(
+                    o.status,
+                    style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ],
             ),
+          ),
+          Divider(height: 1, color: AppColors.divider),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                TextButton.icon(
+                  style: _compactActionButtonStyle,
+                  icon: const Icon(Icons.chat_rounded, size: 16, color: AppColors.primary),
+                  label: const Text("WhatsApp", style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12)),
+                  onPressed: () => sendWhatsAppMessage(
+                    context,
+                    phone: _customer.phone,
+                    message: buildOrderStatusMessage(
+                      customerName: _customer.name,
+                      clothingType: o.clothingType,
+                      status: o.status,
+                    ),
+                  ),
+                ),
+                TextButton.icon(
+                  style: _compactActionButtonStyle,
+                  icon: const Icon(Icons.receipt_rounded, size: 16, color: AppColors.primary),
+                  label: const Text("Invoice", style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12)),
+                  onPressed: () => InvoiceService.generateAndShareInvoice(o),
+                ),
+                TextButton.icon(
+                  style: _compactActionButtonStyle,
+                  icon: const Icon(Icons.edit_outlined, size: 16, color: AppColors.primary),
+                  label: const Text("Edit", style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12)),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => OrderFormScreen(order: o)),
+                  ).then((_) => _fetchData()),
+                ),
+              ],
+            ),
+          ),
+            ],
           ),
         ),
       ),
