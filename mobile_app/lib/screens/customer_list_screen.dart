@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/customer.dart';
+import '../providers/theme_provider.dart';
 import '../repositories/customer_repository.dart';
 import 'customer_detail_screen.dart';
 import '../widgets/add_customer_sheet.dart';
@@ -58,6 +60,7 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    AppColors.dark = context.watch<ThemeProvider>().isDark;
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -80,7 +83,7 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.surfaceCard,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.04),
@@ -97,7 +100,7 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
                 prefixIcon: const Icon(Icons.search_rounded, color: AppColors.primary),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear_rounded, color: AppColors.textMedium),
+                        icon: Icon(Icons.clear_rounded, color: AppColors.textMedium),
                         onPressed: () {
                           _searchController.clear();
                           _filterCustomers('');
@@ -137,10 +140,10 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
                               return Container(
                                 margin: const EdgeInsets.only(bottom: 12),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: AppColors.surfaceCard,
                                   borderRadius: BorderRadius.circular(16),
                                   boxShadow: AppColors.cardShadow,
-                                  border: Border.all(color: Colors.grey.shade100, width: 1),
+                                  border: Border.all(color: AppColors.divider, width: 1),
                                 ),
                                 child: ListTile(
                                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -157,7 +160,7 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
                                       Expanded(
                                         child: Text(
                                           customer.name,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 16,
                                             color: AppColors.textDark,
@@ -193,19 +196,19 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
                                     padding: const EdgeInsets.only(top: 4),
                                     child: Row(
                                       children: [
-                                        Icon(Icons.phone_iphone_rounded, size: 14, color: Colors.grey.shade500),
+                                        Icon(Icons.phone_iphone_rounded, size: 14, color: AppColors.iconMuted),
                                         const SizedBox(width: 4),
                                         Text(
                                           customer.phone,
                                           style: TextStyle(
-                                            color: Colors.grey.shade600,
+                                            color: AppColors.textMedium,
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
                                       ],
                                     ),
                                   ),
-                                  trailing: Icon(Icons.arrow_forward_ios_rounded, color: Colors.grey.shade400, size: 16),
+                                  trailing: Icon(Icons.arrow_forward_ios_rounded, color: AppColors.iconMuted, size: 16),
                                   onTap: () {
                                     Navigator.push(
                                       context,
@@ -246,13 +249,13 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
+                  color: AppColors.surfaceVariant,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.people_outline_rounded, size: 64, color: Colors.grey.shade400),
+                child: Icon(Icons.people_outline_rounded, size: 64, color: AppColors.iconMuted),
               ),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 "No customers found / کوئی کسٹمر نہیں ملا",
                 style: TextStyle(
                   fontSize: 16,
@@ -265,7 +268,7 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
                 "Tap the + button to add a new customer",
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.grey.shade500,
+                  color: AppColors.textMedium,
                 ),
               ),
             ],

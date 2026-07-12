@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/order.dart';
+import '../providers/theme_provider.dart';
 import '../repositories/order_repository.dart';
 import 'order_form_screen.dart';
 import '../utils/app_colors.dart';
@@ -44,6 +46,7 @@ class _UpcomingDeliveriesScreenState extends State<UpcomingDeliveriesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    AppColors.dark = context.watch<ThemeProvider>().isDark;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -78,18 +81,18 @@ class _UpcomingDeliveriesScreenState extends State<UpcomingDeliveriesScreen> {
             children: [
               Container(
                 padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(color: Colors.grey.shade100, shape: BoxShape.circle),
-                child: Icon(Icons.event_available_rounded, size: 64, color: Colors.grey.shade400),
+                decoration: BoxDecoration(color: AppColors.surfaceVariant, shape: BoxShape.circle),
+                child: Icon(Icons.event_available_rounded, size: 64, color: AppColors.iconMuted),
               ),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 "No upcoming deliveries",
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
               ),
               const SizedBox(height: 8),
               Text(
                 "Orders with a delivery date will show up here",
-                style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+                style: TextStyle(fontSize: 14, color: AppColors.textMedium),
               ),
             ],
           ),
@@ -105,10 +108,10 @@ class _UpcomingDeliveriesScreenState extends State<UpcomingDeliveriesScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceCard,
         borderRadius: BorderRadius.circular(20),
         boxShadow: AppColors.cardShadow,
-        border: Border.all(color: Colors.grey.shade100, width: 1),
+        border: Border.all(color: AppColors.divider, width: 1),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
@@ -152,7 +155,7 @@ class _UpcomingDeliveriesScreenState extends State<UpcomingDeliveriesScreen> {
                               o.customerName ?? "Unknown",
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textDark),
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textDark),
                             ),
                           ),
                         ],

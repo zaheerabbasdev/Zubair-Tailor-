@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/customer.dart';
 import '../providers/backup_provider.dart';
+import '../providers/theme_provider.dart';
 import '../repositories/customer_repository.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/app_colors.dart';
@@ -86,6 +87,7 @@ class _AddCustomerSheetState extends State<AddCustomerSheet> {
 
   @override
   Widget build(BuildContext context) {
+    AppColors.dark = context.watch<ThemeProvider>().isDark;
     final l10n = AppLocalizations.of(context)!;
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
 
@@ -94,7 +96,7 @@ class _AddCustomerSheetState extends State<AddCustomerSheet> {
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surfaceCard,
           borderRadius: BorderRadius.circular(24),
           boxShadow: AppColors.cardShadow,
         ),
@@ -118,9 +120,9 @@ class _AddCustomerSheetState extends State<AddCustomerSheet> {
                     ),
                   ],
                 ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8),
-                  child: Divider(color: Color(0xFFEEEEEE), height: 1),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Divider(color: AppColors.divider, height: 1),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(

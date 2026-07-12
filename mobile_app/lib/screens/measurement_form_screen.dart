@@ -5,6 +5,7 @@ import '../l10n/app_localizations.dart';
 import '../models/customer.dart';
 import '../models/measurement.dart';
 import '../providers/backup_provider.dart';
+import '../providers/theme_provider.dart';
 import '../repositories/measurement_repository.dart';
 import '../utils/fraction_helper.dart';
 import '../utils/app_colors.dart';
@@ -94,6 +95,7 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    AppColors.dark = context.watch<ThemeProvider>().isDark;
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -191,7 +193,7 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.surfaceCard,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: AppColors.cardShadow,
               ),
@@ -255,13 +257,13 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
               const SizedBox(width: 12),
               Text(
                 title,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
               ),
             ],
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 14),
-            child: Divider(color: Color(0xFFEEEEEE), height: 1),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            child: Divider(color: AppColors.divider, height: 1),
           ),
           ...children,
         ],
@@ -274,7 +276,7 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textDark)),
+        Text(label, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textDark)),
         const SizedBox(height: 6),
         TextFormField(
           controller: controller,
@@ -326,7 +328,7 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textDark)),
+        Text(label, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textDark)),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
           value: value,
@@ -359,7 +361,7 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
       selectedColor: AppColors.primary,
       backgroundColor: AppColors.background,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      side: BorderSide(color: value ? AppColors.primary : Colors.grey.shade300, width: 1),
+      side: BorderSide(color: value ? AppColors.primary : AppColors.divider, width: 1),
       showCheckmark: false,
     );
   }

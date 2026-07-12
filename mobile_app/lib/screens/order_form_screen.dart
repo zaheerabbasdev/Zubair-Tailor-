@@ -10,6 +10,7 @@ import '../models/customer.dart';
 import '../models/measurement.dart';
 import '../models/order.dart';
 import '../providers/backup_provider.dart';
+import '../providers/theme_provider.dart';
 import '../repositories/customer_repository.dart';
 import '../repositories/measurement_repository.dart';
 import '../repositories/order_repository.dart';
@@ -157,6 +158,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    AppColors.dark = context.watch<ThemeProvider>().isDark;
     final l10n = AppLocalizations.of(context)!;
     final price = double.tryParse(_priceController.text) ?? 0;
     final amountPaid = double.tryParse(_amountPaidController.text) ?? 0;
@@ -184,7 +186,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.surfaceCard,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: AppColors.cardShadow,
               ),
@@ -202,15 +204,15 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                         child: const Icon(Icons.assignment_outlined, color: AppColors.primary, size: 20),
                       ),
                       const SizedBox(width: 12),
-                      const Text(
+                      Text(
                         "Details / تفصیلات",
                         style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                     ],
                   ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 14),
-                    child: Divider(color: Color(0xFFEEEEEE), height: 1),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: Divider(color: AppColors.divider, height: 1),
                   ),
                   DropdownButtonFormField<Customer>(
                     value: _selectedCustomer,
@@ -341,7 +343,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                     backgroundColor: AppColors.background,
                     labelStyle: TextStyle(color: _priority ? Colors.white : AppColors.textDark),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    side: BorderSide(color: _priority ? AppColors.primary : Colors.grey.shade300),
+                    side: BorderSide(color: _priority ? AppColors.primary : AppColors.divider),
                     showCheckmark: false,
                   ),
                   const SizedBox(height: 16),
@@ -369,10 +371,10 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: _imagePath == null
-                          ? const Row(
+                          ? Row(
                               children: [
-                                Icon(Icons.add_a_photo_outlined, color: AppColors.primary),
-                                SizedBox(width: 12),
+                                const Icon(Icons.add_a_photo_outlined, color: AppColors.primary),
+                                const SizedBox(width: 12),
                                 Text("Add Reference Photo", style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textDark)),
                               ],
                             )
@@ -389,7 +391,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 12),
-                                const Expanded(
+                                Expanded(
                                   child: Text("Tap to change photo", style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textDark)),
                                 ),
                               ],

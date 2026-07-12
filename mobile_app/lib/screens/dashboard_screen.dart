@@ -5,6 +5,7 @@ import '../models/customer.dart';
 import '../models/order.dart';
 import '../utils/app_colors.dart';
 import '../providers/backup_provider.dart';
+import '../providers/theme_provider.dart';
 import '../repositories/customer_repository.dart';
 import '../repositories/order_repository.dart';
 import '../widgets/app_drawer.dart';
@@ -12,6 +13,7 @@ import 'customer_detail_screen.dart';
 import 'customer_list_screen.dart';
 import 'order_list_screen.dart';
 import 'upcoming_deliveries_screen.dart';
+import 'reports_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -93,6 +95,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    AppColors.dark = context.watch<ThemeProvider>().isDark;
     final l10n = AppLocalizations.of(context)!;
     final isSearching = _searchQuery.isNotEmpty;
 
@@ -119,14 +122,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       prefixIcon: const Icon(Icons.search_rounded, color: AppColors.primary),
                       suffixIcon: isSearching
                           ? IconButton(
-                              icon: const Icon(Icons.clear_rounded, color: AppColors.textMedium),
+                              icon: Icon(Icons.clear_rounded, color: AppColors.textMedium),
                               onPressed: () {
                                 _searchController.clear();
                                 setState(() => _searchQuery = '');
                               },
                             )
                           : null,
-                      fillColor: Colors.white,
+                      fillColor: AppColors.surfaceCard,
                       filled: true,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
                       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
@@ -160,7 +163,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Center(
             child: Text(
               "No results found",
-              style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w500),
+              style: TextStyle(color: AppColors.textMedium, fontWeight: FontWeight.w500),
             ),
           ),
         ),
@@ -169,15 +172,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return [
       if (customers.isNotEmpty) ...[
-        const Text("Customers", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+        Text("Customers", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
         const SizedBox(height: 12),
         ...customers.map((c) => Container(
               margin: const EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.surfaceCard,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: AppColors.cardShadow,
-                border: Border.all(color: Colors.grey.shade100, width: 1),
+                border: Border.all(color: AppColors.divider, width: 1),
               ),
               child: ListTile(
                 leading: Container(
@@ -185,23 +188,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.08), shape: BoxShape.circle),
                   child: const Icon(Icons.person_rounded, color: AppColors.primary),
                 ),
-                title: Text(c.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text(c.phone),
-                trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textMedium),
+                title: Text(c.name, style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                subtitle: Text(c.phone, style: TextStyle(color: AppColors.textMedium)),
+                trailing: Icon(Icons.chevron_right_rounded, color: AppColors.textMedium),
                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CustomerDetailScreen(customer: c))).then((_) => _fetchSummary()),
               ),
             )),
         const SizedBox(height: 12),
       ],
       if (orders.isNotEmpty) ...[
-        const Text("Orders", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+        Text("Orders", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
         const SizedBox(height: 12),
         ...orders.map((o) {
           final statusColor = AppColors.statusColor(o.status);
           return Container(
             margin: const EdgeInsets.only(bottom: 12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.surfaceCard,
               borderRadius: BorderRadius.circular(16),
               boxShadow: AppColors.cardShadow,
               border: Border(left: BorderSide(color: statusColor, width: 4)),
@@ -212,8 +215,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.08), borderRadius: BorderRadius.circular(12)),
                 child: const Icon(Icons.shopping_bag_outlined, color: AppColors.primary),
               ),
-              title: Text(o.customerName ?? "Unknown", style: const TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text(o.clothingType),
+              title: Text(o.customerName ?? "Unknown", style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark)),
+              subtitle: Text(o.clothingType, style: TextStyle(color: AppColors.textMedium)),
               trailing: Text(o.status, style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 12)),
               onTap: () {
                 final customer = _customerFor(o);
@@ -261,13 +264,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           Text(
             l10n.status,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: AppColors.textDark,
             ),
           ),
-          Icon(Icons.analytics_outlined, color: Colors.grey.shade400, size: 20),
+          Icon(Icons.analytics_outlined, color: AppColors.iconMuted, size: 20),
         ],
       ),
       const SizedBox(height: 16),
@@ -276,7 +279,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _buildStatsGrid(),
       const SizedBox(height: 32),
 
-      const Text(
+      Text(
         "Navigation",
         style: TextStyle(
           fontSize: 18,
@@ -310,6 +313,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
         AppColors.statusInProgress,
         () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UpcomingDeliveriesScreen())),
       ),
+      const SizedBox(height: 12),
+      _buildNavigationItem(
+        context,
+        "Reports",
+        Icons.bar_chart_rounded,
+        AppColors.secondary,
+        () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsScreen())),
+      ),
     ];
   }
 
@@ -320,7 +331,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surfaceCard,
           borderRadius: BorderRadius.circular(16),
           boxShadow: AppColors.cardShadow,
           border: Border.all(color: color.withOpacity(0.1), width: 1),
@@ -338,7 +349,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: 12),
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
                 color: AppColors.textDark,
@@ -408,7 +419,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceCard,
         borderRadius: BorderRadius.circular(16),
         boxShadow: AppColors.cardShadow,
       ),
@@ -448,7 +459,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const SizedBox(height: 16),
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textMedium,
@@ -471,7 +482,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     VoidCallback onTap,
   ) {
     return Material(
-      color: Colors.white,
+      color: AppColors.surfaceCard,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,
@@ -481,7 +492,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             boxShadow: AppColors.cardShadow,
-            border: Border.all(color: Colors.grey.shade100, width: 1),
+            border: Border.all(color: AppColors.divider, width: 1),
           ),
           child: Row(
             children: [
@@ -497,14 +508,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Expanded(
                 child: Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textDark,
                   ),
                 ),
               ),
-              Icon(Icons.arrow_forward_ios_rounded, color: Colors.grey.shade400, size: 16),
+              Icon(Icons.arrow_forward_ios_rounded, color: AppColors.iconMuted, size: 16),
             ],
           ),
         ),

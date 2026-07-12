@@ -7,9 +7,11 @@ import '../models/customer.dart';
 import '../models/measurement.dart';
 import '../models/order.dart';
 import '../providers/backup_provider.dart';
+import '../providers/theme_provider.dart';
 import '../repositories/customer_repository.dart';
 import '../repositories/measurement_repository.dart';
 import '../repositories/order_repository.dart';
+import '../services/invoice_service.dart';
 import 'measurement_form_screen.dart';
 import 'order_form_screen.dart';
 import '../widgets/add_customer_sheet.dart';
@@ -76,6 +78,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    AppColors.dark = context.watch<ThemeProvider>().isDark;
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -148,17 +151,17 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 16),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: AppColors.surfaceCard,
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: AppColors.cardShadow,
                       ),
                       child: Column(
                         children: [
-                          Icon(Icons.architecture_rounded, size: 48, color: Colors.grey.shade300),
+                          Icon(Icons.architecture_rounded, size: 48, color: AppColors.iconMuted),
                           const SizedBox(height: 16),
                           Text(
                             "No measurements found / کوئی ناپ نہیں ملا",
-                            style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w500),
+                            style: TextStyle(color: AppColors.textMedium, fontWeight: FontWeight.w500),
                             textAlign: TextAlign.center,
                           ),
                         ],
@@ -180,7 +183,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                       ),
                       Text(
                         "${_orders.length}",
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textMedium),
+                        style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textMedium),
                       ),
                     ],
                   ),
@@ -189,17 +192,17 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 16),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: AppColors.surfaceCard,
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: AppColors.cardShadow,
                       ),
                       child: Column(
                         children: [
-                          Icon(Icons.shopping_bag_outlined, size: 48, color: Colors.grey.shade300),
+                          Icon(Icons.shopping_bag_outlined, size: 48, color: AppColors.iconMuted),
                           const SizedBox(height: 16),
                           Text(
                             "No orders found",
-                            style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w500),
+                            style: TextStyle(color: AppColors.textMedium, fontWeight: FontWeight.w500),
                             textAlign: TextAlign.center,
                           ),
                         ],
@@ -223,7 +226,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text("Cancel", style: TextStyle(color: Colors.grey.shade600)),
+            child: Text("Cancel", style: TextStyle(color: AppColors.textMedium)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -302,7 +305,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                           child: Text(
                             "ID: ${_customer.uniqueId ?? '---'}",
                             style: const TextStyle(
-                              color: AppColors.textDark,
+                              color: Color(0xFF1A1A2E),
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
                             ),
@@ -384,10 +387,10 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceCard,
         borderRadius: BorderRadius.circular(20),
         boxShadow: AppColors.cardShadow,
-        border: Border.all(color: Colors.grey.shade100, width: 1),
+        border: Border.all(color: AppColors.divider, width: 1),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
@@ -445,7 +448,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                               o.clothingType,
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.textDark),
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.textDark),
                             ),
                           ),
                         ],
@@ -453,7 +456,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                       const SizedBox(height: 4),
                       Text(
                         "Rs. ${o.price}",
-                        style: const TextStyle(fontSize: 13, color: AppColors.textMedium, fontWeight: FontWeight.w600),
+                        style: TextStyle(fontSize: 13, color: AppColors.textMedium, fontWeight: FontWeight.w600),
                       ),
                       if (due > 0) ...[
                         const SizedBox(height: 4),
@@ -488,14 +491,26 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    IconButton(
-                      icon: const Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => OrderFormScreen(order: o)),
-                      ).then((_) => _fetchData()),
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.receipt_rounded, size: 18, color: AppColors.primary),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          onPressed: () => InvoiceService.generateAndShareInvoice(o),
+                          tooltip: "Invoice",
+                        ),
+                        const SizedBox(width: 12),
+                        IconButton(
+                          icon: const Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => OrderFormScreen(order: o)),
+                          ).then((_) => _fetchData()),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -511,10 +526,10 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceCard,
         borderRadius: BorderRadius.circular(20),
         boxShadow: AppColors.cardShadow,
-        border: Border.all(color: Colors.grey.shade100, width: 1),
+        border: Border.all(color: AppColors.divider, width: 1),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
@@ -524,7 +539,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
             initiallyExpanded: true,
             title: Text(
               "Created: ${m.createdAt != null ? m.createdAt!.split('T')[0] : 'N/A'}",
-              style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark),
+              style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark),
             ),
             leading: Container(
               padding: const EdgeInsets.all(8),
@@ -540,7 +555,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Divider(height: 1, color: Color(0xFFEEEEEE)),
+                    Divider(height: 1, color: AppColors.divider),
                     const SizedBox(height: 16),
                     _buildSectionHeaderTitle("DIMENSIONS"),
                     const SizedBox(height: 12),
@@ -584,11 +599,11 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                         decoration: BoxDecoration(
                           color: AppColors.background,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey.shade200),
+                          border: Border.all(color: AppColors.divider),
                         ),
                         child: Text(
                           m.notes!,
-                          style: const TextStyle(color: AppColors.textDark, height: 1.4, fontSize: 13),
+                          style: TextStyle(color: AppColors.textDark, height: 1.4, fontSize: 13),
                         ),
                       ),
                     ],
@@ -669,13 +684,13 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(l1, style: const TextStyle(fontSize: 11, color: AppColors.textMedium, fontWeight: FontWeight.w500)),
+                  Text(l1, style: TextStyle(fontSize: 11, color: AppColors.textMedium, fontWeight: FontWeight.w500)),
                   const SizedBox(height: 4),
                   Directionality(
                     textDirection: TextDirection.ltr,
                     child: Text(
                       v1?.toString() ?? '-',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.textDark),
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.textDark),
                       textAlign: isRtl ? TextAlign.right : TextAlign.left,
                     ),
                   ),
@@ -695,13 +710,13 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(l2, style: const TextStyle(fontSize: 11, color: AppColors.textMedium, fontWeight: FontWeight.w500)),
+                    Text(l2, style: TextStyle(fontSize: 11, color: AppColors.textMedium, fontWeight: FontWeight.w500)),
                     const SizedBox(height: 4),
                     Directionality(
                       textDirection: TextDirection.ltr,
                       child: Text(
                         v2?.toString() ?? '-',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.textDark),
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.textDark),
                         textAlign: isRtl ? TextAlign.right : TextAlign.left,
                       ),
                     ),

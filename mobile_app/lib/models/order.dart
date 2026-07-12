@@ -12,6 +12,7 @@ class Order {
   final String? imageUrl;
   final String? customerName;
   final String? customerPhone;
+  final DateTime? createdAt;
 
   Order({
     this.id,
@@ -27,6 +28,7 @@ class Order {
     this.imageUrl,
     this.customerName,
     this.customerPhone,
+    this.createdAt,
   });
 
   factory Order.fromJson(Map<String, dynamic> json) {
@@ -44,6 +46,7 @@ class Order {
       imageUrl: json['image_url'],
       customerName: json['customer_name'],
       customerPhone: json['customer_phone'],
+      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
     );
   }
 
@@ -77,6 +80,7 @@ class Order {
     String? imageUrl,
     String? customerName,
     String? customerPhone,
+    DateTime? createdAt,
   }) {
     return Order(
       id: id ?? this.id,
@@ -92,6 +96,7 @@ class Order {
       imageUrl: imageUrl ?? this.imageUrl,
       customerName: customerName ?? this.customerName,
       customerPhone: customerPhone ?? this.customerPhone,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 }

@@ -5,7 +5,9 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/order.dart';
 import '../providers/backup_provider.dart';
+import '../providers/theme_provider.dart';
 import '../repositories/order_repository.dart';
+import '../services/invoice_service.dart';
 import 'order_form_screen.dart';
 import '../utils/app_colors.dart';
 
@@ -61,6 +63,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    AppColors.dark = context.watch<ThemeProvider>().isDark;
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -79,7 +82,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
           // Filter Chips Row
           Container(
             height: 60,
-            color: Colors.white,
+            color: AppColors.surfaceCard,
             child: ListView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -126,10 +129,10 @@ class _OrderListScreenState extends State<OrderListScreen> {
                               return Container(
                                 margin: const EdgeInsets.only(bottom: 16),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: AppColors.surfaceCard,
                                   borderRadius: BorderRadius.circular(20),
                                   boxShadow: AppColors.cardShadow,
-                                  border: Border.all(color: Colors.grey.shade100, width: 1),
+                                  border: Border.all(color: AppColors.divider, width: 1),
                                 ),
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(20),
@@ -188,7 +191,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                                             order.customerName ?? "Unknown / نامعلوم",
                                                             overflow: TextOverflow.ellipsis,
                                                             maxLines: 1,
-                                                            style: const TextStyle(
+                                                            style: TextStyle(
                                                               fontWeight: FontWeight.bold,
                                                               fontSize: 16,
                                                               color: AppColors.textDark,
@@ -211,14 +214,14 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                                     const SizedBox(height: 4),
                                                     Row(
                                                       children: [
-                                                        Icon(Icons.calendar_month_outlined, size: 14, color: Colors.grey.shade400),
+                                                        Icon(Icons.calendar_month_outlined, size: 14, color: AppColors.iconMuted),
                                                         const SizedBox(width: 4),
                                                         Expanded(
                                                           child: Text(
                                                             "${l10n.deliveryDate}: ${order.deliveryDate != null ? order.deliveryDate!.toString().split(' ')[0] : 'N/A'}",
                                                             overflow: TextOverflow.ellipsis,
                                                             maxLines: 1,
-                                                            style: TextStyle(color: Colors.grey.shade600, fontSize: 12, fontWeight: FontWeight.w500),
+                                                            style: TextStyle(color: AppColors.textMedium, fontSize: 12, fontWeight: FontWeight.w500),
                                                           ),
                                                         ),
                                                       ],
@@ -232,7 +235,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                                 children: [
                                                   Text(
                                                     "Rs. ${order.price}",
-                                                    style: const TextStyle(
+                                                    style: TextStyle(
                                                       fontWeight: FontWeight.bold,
                                                       fontSize: 16,
                                                       color: AppColors.textDark,
@@ -259,12 +262,22 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                             ],
                                           ),
                                         ),
-                                        const Divider(height: 1, color: Color(0xFFEEEEEE)),
+                                        Divider(height: 1, color: AppColors.divider),
                                         Padding(
                                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.end,
+                                          child: Wrap(
+                                            alignment: WrapAlignment.end,
+                                            spacing: 4,
+                                            runSpacing: 4,
                                             children: [
+                                              TextButton.icon(
+                                                icon: const Icon(Icons.receipt_rounded, size: 18, color: AppColors.primary),
+                                                label: const Text(
+                                                  "Invoice",
+                                                  style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 13),
+                                                ),
+                                                onPressed: () => InvoiceService.generateAndShareInvoice(order),
+                                              ),
                                               TextButton.icon(
                                                 icon: const Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
                                                 label: const Text(
@@ -330,15 +343,15 @@ class _OrderListScreenState extends State<OrderListScreen> {
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
+                  color: AppColors.surfaceVariant,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey.shade400),
+                child: Icon(Icons.inventory_2_outlined, size: 64, color: AppColors.iconMuted),
               ),
               const SizedBox(height: 24),
               Text(
                 "No ${_selectedFilter == 'All' ? '' : _selectedFilter} orders found",
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textDark,
@@ -349,7 +362,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                 "Tap the + button to create a new order",
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.grey.shade500,
+                  color: AppColors.textMedium,
                 ),
               ),
             ],
@@ -393,7 +406,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
               children: [
                 Text(
                   l10n.updateStatus,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close_rounded),

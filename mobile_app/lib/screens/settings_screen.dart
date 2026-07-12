@@ -4,6 +4,8 @@ import 'package:googleapis/drive/v3.dart' as drive;
 import '../l10n/app_localizations.dart';
 import '../providers/backup_provider.dart';
 import '../providers/locale_provider.dart';
+import '../providers/theme_provider.dart';
+import '../services/export_service.dart';
 import '../utils/app_colors.dart';
 import 'dashboard_screen.dart';
 
@@ -12,6 +14,7 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    AppColors.dark = context.watch<ThemeProvider>().isDark;
     final l10n = AppLocalizations.of(context)!;
     final localeProvider = Provider.of<LocaleProvider>(context);
     final currentLocale = localeProvider.locale.languageCode;
@@ -59,6 +62,13 @@ class SettingsScreen extends StatelessWidget {
           ),
 
           const SizedBox(height: 32),
+          _buildSectionHeader(context, "Appearance", Icons.dark_mode_outlined),
+          const SizedBox(height: 12),
+          Consumer<ThemeProvider>(
+            builder: (context, theme, _) => _buildAppearanceCard(context, theme),
+          ),
+
+          const SizedBox(height: 32),
           _buildSectionHeader(context, "Backup & Restore", Icons.cloud_outlined),
           const SizedBox(height: 12),
           Consumer<BackupProvider>(
@@ -66,27 +76,32 @@ class SettingsScreen extends StatelessWidget {
           ),
 
           const SizedBox(height: 32),
+          _buildSectionHeader(context, "Export Data", Icons.file_download_outlined),
+          const SizedBox(height: 12),
+          _buildExportCard(context),
+
+          const SizedBox(height: 32),
           _buildSectionHeader(context, "System Info", Icons.info_outline_rounded),
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.surfaceCard,
               borderRadius: BorderRadius.circular(20),
               boxShadow: AppColors.cardShadow,
-              border: Border.all(color: Colors.grey.shade100, width: 1),
+              border: Border.all(color: AppColors.divider, width: 1),
             ),
             child: Column(
               children: [
                 _buildInfoRow("App Version", "1.0.0 (Premium)"),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10),
-                  child: Divider(color: Color(0xFFEEEEEE), height: 1),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Divider(color: AppColors.divider, height: 1),
                 ),
                 _buildInfoRow("Publisher", "Zubair Tech"),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10),
-                  child: Divider(color: Color(0xFFEEEEEE), height: 1),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Divider(color: AppColors.divider, height: 1),
                 ),
                 _buildInfoRow("Database Status", "Local Sync Online"),
               ],
@@ -95,6 +110,89 @@ class SettingsScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildAppearanceCard(BuildContext context, ThemeProvider theme) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: AppColors.cardShadow,
+        border: Border.all(color: AppColors.divider, width: 1),
+      ),
+      child: SwitchListTile(
+        contentPadding: EdgeInsets.zero,
+        title: Text(
+          "Dark Mode",
+          style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark, fontSize: 15),
+        ),
+        subtitle: Text(
+          "Switch the app to a dark color scheme",
+          style: TextStyle(color: AppColors.textMedium, fontSize: 12),
+        ),
+        value: theme.isDark,
+        activeThumbColor: AppColors.primary,
+        onChanged: (value) => theme.setDark(value),
+      ),
+    );
+  }
+
+  Widget _buildExportCard(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: AppColors.cardShadow,
+        border: Border.all(color: AppColors.divider, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            "Export your customers and orders as CSV files you can open in Excel or share elsewhere.",
+            style: TextStyle(color: AppColors.textMedium, fontSize: 13, height: 1.4),
+          ),
+          const SizedBox(height: 16),
+          OutlinedButton.icon(
+            onPressed: () => _exportOrders(context),
+            icon: const Icon(Icons.receipt_long_outlined, size: 18),
+            label: const Text("Export Orders (CSV)"),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: () => _exportCustomers(context),
+            icon: const Icon(Icons.people_outline_rounded, size: 18),
+            label: const Text("Export Customers (CSV)"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _exportOrders(BuildContext context) async {
+    try {
+      await ExportService.exportOrdersCsv();
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Export failed: $e")),
+        );
+      }
+    }
+  }
+
+  Future<void> _exportCustomers(BuildContext context) async {
+    try {
+      await ExportService.exportCustomersCsv();
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Export failed: $e")),
+        );
+      }
+    }
   }
 
   Widget _buildSectionHeader(BuildContext context, String title, IconData icon) {
@@ -128,10 +226,10 @@ class SettingsScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
+          color: isSelected ? AppColors.surfaceCard : AppColors.surfaceCard.withOpacity(0.6),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? AppColors.primary : Colors.grey.shade200,
+            color: isSelected ? AppColors.primary : AppColors.divider,
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected ? AppColors.cardShadow : [],
@@ -169,11 +267,11 @@ class SettingsScreen extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textMedium, fontSize: 13),
+          style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textMedium, fontSize: 13),
         ),
         Text(
           value,
-          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark, fontSize: 13),
+          style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark, fontSize: 13),
         ),
       ],
     );
@@ -183,16 +281,16 @@ class SettingsScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceCard,
         borderRadius: BorderRadius.circular(20),
         boxShadow: AppColors.cardShadow,
-        border: Border.all(color: Colors.grey.shade100, width: 1),
+        border: Border.all(color: AppColors.divider, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (!backup.isSignedIn) ...[
-            const Text(
+            Text(
               "Connect your Google account to automatically back up your customers, measurements, and orders to Google Drive.",
               style: TextStyle(color: AppColors.textMedium, fontSize: 13, height: 1.4),
             ),
@@ -204,9 +302,9 @@ class SettingsScreen extends StatelessWidget {
             ),
           ] else ...[
             _buildInfoRow("Account", backup.accountEmail ?? "-"),
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 10),
-              child: Divider(color: Color(0xFFEEEEEE), height: 1),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Divider(color: AppColors.divider, height: 1),
             ),
             _buildInfoRow("Last Backup", _formatLastBackup(backup.lastBackupAt)),
             const SizedBox(height: 16),
@@ -314,7 +412,7 @@ class SettingsScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 "Restore Backup",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark),
               ),

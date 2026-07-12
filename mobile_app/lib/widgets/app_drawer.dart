@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_localizations.dart';
+import '../providers/theme_provider.dart';
 import '../utils/app_colors.dart';
 import '../screens/customer_list_screen.dart';
 import '../screens/order_list_screen.dart';
+import '../screens/reports_screen.dart';
 import '../screens/settings_screen.dart';
 import '../screens/upcoming_deliveries_screen.dart';
 
@@ -14,6 +17,7 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    AppColors.dark = context.watch<ThemeProvider>().isDark;
     final l10n = AppLocalizations.of(context)!;
 
     return Drawer(
@@ -78,6 +82,14 @@ class AppDrawer extends StatelessWidget {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const UpcomingDeliveriesScreen()));
             },
           ),
+          _buildDrawerItem(
+            icon: Icons.bar_chart_rounded,
+            title: "Reports",
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsScreen()));
+            },
+          ),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
             child: Divider(color: Color(0xFFE5D5C5), height: 1),
@@ -120,7 +132,7 @@ class AppDrawer extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 24),
             child: Text(
               "Version 1.0.0 (Premium)",
-              style: TextStyle(color: Colors.grey.shade500, fontSize: 12, fontWeight: FontWeight.bold),
+              style: TextStyle(color: AppColors.textMedium, fontSize: 12, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -155,7 +167,7 @@ class AppDrawer extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text("Cancel", style: TextStyle(color: Colors.grey.shade600)),
+            child: Text("Cancel", style: TextStyle(color: AppColors.textMedium)),
           ),
           ElevatedButton(
             onPressed: () => SystemNavigator.pop(),
@@ -187,7 +199,7 @@ class AppDrawer extends StatelessWidget {
       ),
       title: Text(
         title,
-        style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark, fontSize: 14),
+        style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark, fontSize: 14),
       ),
       onTap: onTap,
     );
