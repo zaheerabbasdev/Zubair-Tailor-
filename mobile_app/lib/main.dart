@@ -5,18 +5,26 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'l10n/app_localizations.dart';
+import 'providers/app_lock_provider.dart';
 import 'providers/backup_provider.dart';
 import 'providers/locale_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/splash_screen.dart';
+import 'services/notification_service.dart';
 import 'utils/app_colors.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   // sqflite has no native Windows/Linux desktop implementation; route it
   // through sqflite_common_ffi there. Android/iOS keep the default factory.
   if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
+  }
+
+  if (!kIsWeb && Platform.isAndroid) {
+    await NotificationService.instance.init();
   }
 
   runApp(
@@ -25,6 +33,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => LocaleProvider()),
         ChangeNotifierProvider(create: (_) => BackupProvider()..init()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(lazy: false, create: (_) => AppLockProvider()),
       ],
       child: const MyApp(),
     ),

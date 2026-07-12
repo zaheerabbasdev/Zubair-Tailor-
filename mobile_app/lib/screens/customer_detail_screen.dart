@@ -12,6 +12,7 @@ import '../repositories/customer_repository.dart';
 import '../repositories/measurement_repository.dart';
 import '../repositories/order_repository.dart';
 import '../services/invoice_service.dart';
+import '../utils/whatsapp_helper.dart';
 import 'measurement_form_screen.dart';
 import 'order_form_screen.dart';
 import '../widgets/add_customer_sheet.dart';
@@ -493,6 +494,22 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                     const SizedBox(height: 8),
                     Row(
                       children: [
+                        IconButton(
+                          icon: const Icon(Icons.chat_rounded, size: 18, color: AppColors.primary),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          onPressed: () => sendWhatsAppMessage(
+                            context,
+                            phone: _customer.phone,
+                            message: buildOrderStatusMessage(
+                              customerName: _customer.name,
+                              clothingType: o.clothingType,
+                              status: o.status,
+                            ),
+                          ),
+                          tooltip: "WhatsApp",
+                        ),
+                        const SizedBox(width: 12),
                         IconButton(
                           icon: const Icon(Icons.receipt_rounded, size: 18, color: AppColors.primary),
                           padding: EdgeInsets.zero,

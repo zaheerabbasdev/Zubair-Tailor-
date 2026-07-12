@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../models/expense.dart';
 import '../models/order.dart';
 import '../providers/theme_provider.dart';
 import '../repositories/customer_repository.dart';
+import '../repositories/expense_repository.dart';
 import '../repositories/order_repository.dart';
 import '../utils/app_colors.dart';
 
@@ -16,8 +18,10 @@ class ReportsScreen extends StatefulWidget {
 class _ReportsScreenState extends State<ReportsScreen> {
   final OrderRepository _orderRepository = OrderRepository();
   final CustomerRepository _customerRepository = CustomerRepository();
+  final ExpenseRepository _expenseRepository = ExpenseRepository();
 
   List<Order> _orders = [];
+  List<Expense> _expenses = [];
   int _totalCustomers = 0;
   bool _isLoading = true;
   String _range = 'This Month';
@@ -32,9 +36,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
     try {
       final orders = await _orderRepository.getAll();
       final customers = await _customerRepository.getAll();
+      final expenses = await _expenseRepository.getAll();
       if (mounted) {
         setState(() {
           _orders = orders;
+          _expenses = expenses;
           _totalCustomers = customers.length;
           _isLoading = false;
         });
@@ -44,13 +50,22 @@ class _ReportsScreenState extends State<ReportsScreen> {
     }
   }
 
-  List<Order> get _filteredOrders {
-    if (_range == 'All Time') return _orders;
+  DateTime? get _cutoff {
+    if (_range == 'All Time') return null;
     final now = DateTime.now();
-    final cutoff = _range == 'This Month'
-        ? DateTime(now.year, now.month, 1)
-        : now.subtract(const Duration(days: 30));
+    return _range == 'This Month' ? DateTime(now.year, now.month, 1) : now.subtract(const Duration(days: 30));
+  }
+
+  List<Order> get _filteredOrders {
+    final cutoff = _cutoff;
+    if (cutoff == null) return _orders;
     return _orders.where((o) => o.createdAt != null && o.createdAt!.isAfter(cutoff)).toList();
+  }
+
+  List<Expense> get _filteredExpenses {
+    final cutoff = _cutoff;
+    if (cutoff == null) return _expenses;
+    return _expenses.where((e) => e.expenseDate.isAfter(cutoff)).toList();
   }
 
   @override
@@ -58,11 +73,15 @@ class _ReportsScreenState extends State<ReportsScreen> {
     AppColors.dark = context.watch<ThemeProvider>().isDark;
     final orders = _filteredOrders;
 
+    final expenses = _filteredExpenses;
+
     final revenue = orders.fold<double>(0, (sum, o) => sum + o.amountPaid);
     final outstanding = orders.fold<double>(0, (sum, o) {
       final due = o.price - o.amountPaid;
       return sum + (due > 0 ? due : 0);
     });
+    final totalExpenses = expenses.fold<double>(0, (sum, e) => sum + e.amount);
+    final netProfit = revenue - totalExpenses;
 
     final statusCounts = <String, int>{'Pending': 0, 'In Progress': 0, 'Ready': 0, 'Delivered': 0};
     for (final o in orders) {
@@ -129,6 +148,28 @@ class _ReportsScreenState extends State<ReportsScreen> {
                           value: "Rs. ${outstanding.toStringAsFixed(0)}",
                           icon: Icons.hourglass_bottom_rounded,
                           accentColor: AppColors.statusPending,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildStatCard(
+                          title: "Total Expenses",
+                          value: "Rs. ${totalExpenses.toStringAsFixed(0)}",
+                          icon: Icons.receipt_long_outlined,
+                          accentColor: Colors.deepPurple,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildStatCard(
+                          title: "Net Profit",
+                          value: "Rs. ${netProfit.toStringAsFixed(0)}",
+                          icon: Icons.trending_up_rounded,
+                          accentColor: netProfit >= 0 ? AppColors.statusReady : AppColors.primary,
                         ),
                       ),
                     ],

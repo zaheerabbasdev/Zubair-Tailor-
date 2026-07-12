@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
 import '../l10n/app_localizations.dart';
+import '../providers/app_lock_provider.dart';
 import '../providers/backup_provider.dart';
 import '../providers/locale_provider.dart';
 import '../providers/theme_provider.dart';
 import '../services/export_service.dart';
 import '../utils/app_colors.dart';
+import 'app_lock_screen.dart';
 import 'dashboard_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -66,6 +68,13 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: 12),
           Consumer<ThemeProvider>(
             builder: (context, theme, _) => _buildAppearanceCard(context, theme),
+          ),
+
+          const SizedBox(height: 32),
+          _buildSectionHeader(context, "App Lock", Icons.lock_outline_rounded),
+          const SizedBox(height: 12),
+          Consumer<AppLockProvider>(
+            builder: (context, lock, _) => _buildAppLockCard(context, lock),
           ),
 
           const SizedBox(height: 32),
@@ -180,6 +189,78 @@ class SettingsScreen extends StatelessWidget {
           SnackBar(content: Text("Export failed: $e")),
         );
       }
+    }
+  }
+
+  Widget _buildAppLockCard(BuildContext context, AppLockProvider lock) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: AppColors.cardShadow,
+        border: Border.all(color: AppColors.divider, width: 1),
+      ),
+      child: SwitchListTile(
+        contentPadding: EdgeInsets.zero,
+        title: Text(
+          "PIN Lock",
+          style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark, fontSize: 15),
+        ),
+        subtitle: Text(
+          "Require a 4-digit PIN to open the app",
+          style: TextStyle(color: AppColors.textMedium, fontSize: 12),
+        ),
+        value: lock.isEnabled,
+        activeThumbColor: AppColors.primary,
+        onChanged: (value) => value ? _enableLock(context) : _disableLock(context, lock),
+      ),
+    );
+  }
+
+  Future<void> _enableLock(BuildContext context) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const AppLockScreen(isSetup: true), fullscreenDialog: true),
+    );
+  }
+
+  Future<void> _disableLock(BuildContext context, AppLockProvider lock) async {
+    final pinController = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text("Enter current PIN", style: TextStyle(fontWeight: FontWeight.bold)),
+        content: TextField(
+          controller: pinController,
+          obscureText: true,
+          keyboardType: TextInputType.number,
+          maxLength: 4,
+          decoration: const InputDecoration(counterText: ''),
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text("Cancel", style: TextStyle(color: AppColors.textMedium)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final correct = await lock.verifyPin(pinController.text);
+              if (dialogContext.mounted) Navigator.pop(dialogContext, correct);
+            },
+            child: const Text("Confirm"),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await lock.disable();
+    } else if (confirmed == false && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Incorrect PIN")),
+      );
     }
   }
 

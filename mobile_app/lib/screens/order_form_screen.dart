@@ -14,6 +14,7 @@ import '../providers/theme_provider.dart';
 import '../repositories/customer_repository.dart';
 import '../repositories/measurement_repository.dart';
 import '../repositories/order_repository.dart';
+import '../services/notification_service.dart';
 import '../utils/app_colors.dart';
 
 class OrderFormScreen extends StatefulWidget {
@@ -445,10 +446,17 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
     );
 
     try {
+      Order saved;
       if (_isEditing) {
-        await _orderRepository.update(order);
+        saved = await _orderRepository.update(order);
       } else {
-        await _orderRepository.create(order);
+        saved = await _orderRepository.create(order);
+      }
+      try {
+        await NotificationService.instance.cancelDeliveryReminder(saved.id!);
+        await NotificationService.instance.scheduleDeliveryReminder(saved);
+      } catch (_) {
+        // Reminder scheduling is best-effort and must never block saving the order.
       }
       if (mounted) {
         context.read<BackupProvider>().syncInBackground();

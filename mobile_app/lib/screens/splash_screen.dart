@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/app_lock_provider.dart';
 import '../utils/app_colors.dart';
+import 'app_lock_screen.dart';
 import 'dashboard_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -48,10 +51,11 @@ class _SplashScreenState extends State<SplashScreen>
 
     Timer(const Duration(milliseconds: 2800), () {
       if (!mounted) return;
+      final locked = context.read<AppLockProvider>().isEnabled;
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(
-          pageBuilder: (_, __, ___) => const DashboardScreen(),
+          pageBuilder: (_, __, ___) => locked ? const AppLockScreen() : const DashboardScreen(),
           transitionsBuilder: (_, anim, __, child) =>
               FadeTransition(opacity: anim, child: child),
           transitionDuration: const Duration(milliseconds: 500),

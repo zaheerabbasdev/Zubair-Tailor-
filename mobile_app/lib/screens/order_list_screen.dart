@@ -8,8 +8,10 @@ import '../providers/backup_provider.dart';
 import '../providers/theme_provider.dart';
 import '../repositories/order_repository.dart';
 import '../services/invoice_service.dart';
+import '../services/notification_service.dart';
 import 'order_form_screen.dart';
 import '../utils/app_colors.dart';
+import '../utils/whatsapp_helper.dart';
 
 class OrderListScreen extends StatefulWidget {
   const OrderListScreen({super.key});
@@ -270,6 +272,23 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                             spacing: 4,
                                             runSpacing: 4,
                                             children: [
+                                              if (order.customerPhone != null)
+                                                TextButton.icon(
+                                                  icon: const Icon(Icons.chat_rounded, size: 18, color: AppColors.primary),
+                                                  label: const Text(
+                                                    "WhatsApp",
+                                                    style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 13),
+                                                  ),
+                                                  onPressed: () => sendWhatsAppMessage(
+                                                    context,
+                                                    phone: order.customerPhone!,
+                                                    message: buildOrderStatusMessage(
+                                                      customerName: order.customerName ?? 'Customer',
+                                                      clothingType: order.clothingType,
+                                                      status: order.status,
+                                                    ),
+                                                  ),
+                                                ),
                                               TextButton.icon(
                                                 icon: const Icon(Icons.receipt_rounded, size: 18, color: AppColors.primary),
                                                 label: const Text(
@@ -428,6 +447,11 @@ class _OrderListScreenState extends State<OrderListScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 onTap: () async {
                   await _orderRepository.updateStatus(order.id!, status);
+                  if (status == 'Delivered') {
+                    try {
+                      await NotificationService.instance.cancelDeliveryReminder(order.id!);
+                    } catch (_) {}
+                  }
                   if (mounted) {
                     context.read<BackupProvider>().syncInBackground();
                     Navigator.pop(context);

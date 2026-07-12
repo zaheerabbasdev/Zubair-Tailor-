@@ -7,6 +7,7 @@ import '../l10n/app_localizations.dart';
 import '../providers/theme_provider.dart';
 import '../utils/app_colors.dart';
 import '../screens/customer_list_screen.dart';
+import '../screens/expense_list_screen.dart';
 import '../screens/order_list_screen.dart';
 import '../screens/reports_screen.dart';
 import '../screens/settings_screen.dart';
@@ -53,6 +54,10 @@ class AppDrawer extends StatelessWidget {
               ),
             ),
           ),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
           _buildDrawerItem(
             icon: Icons.dashboard_rounded,
             title: 'Dashboard',
@@ -88,6 +93,14 @@ class AppDrawer extends StatelessWidget {
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsScreen()));
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.account_balance_wallet_outlined,
+            title: "Expenses",
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const ExpenseListScreen()));
             },
           ),
           const Padding(
@@ -127,7 +140,9 @@ class AppDrawer extends StatelessWidget {
             title: "Exit",
             onTap: () => _confirmExit(context),
           ),
-          const Spacer(),
+              ],
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.only(bottom: 24),
             child: Text(

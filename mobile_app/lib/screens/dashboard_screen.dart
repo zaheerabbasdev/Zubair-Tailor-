@@ -8,12 +8,14 @@ import '../providers/backup_provider.dart';
 import '../providers/theme_provider.dart';
 import '../repositories/customer_repository.dart';
 import '../repositories/order_repository.dart';
+import '../services/notification_service.dart';
 import '../widgets/app_drawer.dart';
 import 'customer_detail_screen.dart';
 import 'customer_list_screen.dart';
 import 'order_list_screen.dart';
 import 'upcoming_deliveries_screen.dart';
 import 'reports_screen.dart';
+import 'expense_list_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -38,6 +40,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.initState();
     _fetchSummary();
     context.read<BackupProvider>().autoBackupOnOpen();
+    NotificationService.instance.rescheduleAll().catchError((_) {});
   }
 
   @override
@@ -320,6 +323,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Icons.bar_chart_rounded,
         AppColors.secondary,
         () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsScreen())),
+      ),
+      const SizedBox(height: 12),
+      _buildNavigationItem(
+        context,
+        "Expenses",
+        Icons.account_balance_wallet_outlined,
+        Colors.deepPurple,
+        () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ExpenseListScreen())),
       ),
     ];
   }
