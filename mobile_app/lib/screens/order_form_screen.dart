@@ -1,4 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/customer.dart';
@@ -11,7 +16,8 @@ import '../repositories/order_repository.dart';
 import '../utils/app_colors.dart';
 
 class OrderFormScreen extends StatefulWidget {
-  const OrderFormScreen({super.key});
+  final Order? order;
+  const OrderFormScreen({super.key, this.order});
 
   @override
   State<OrderFormScreen> createState() => _OrderFormScreenState();
@@ -23,21 +29,43 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
   final OrderRepository _orderRepository = OrderRepository();
   final _formKey = GlobalKey<FormState>();
 
+  bool get _isEditing => widget.order != null;
+
   Customer? _selectedCustomer;
   Measurement? _selectedMeasurement;
   List<Customer> _customers = [];
   List<Measurement> _measurements = [];
 
-  final _clothingTypeController = TextEditingController();
-  final _priceController = TextEditingController();
-  final _notesController = TextEditingController();
+  late final TextEditingController _clothingTypeController;
+  late final TextEditingController _priceController;
+  late final TextEditingController _amountPaidController;
+  late final TextEditingController _notesController;
   DateTime? _deliveryDate;
+  bool _priority = false;
+  String? _imagePath;
   bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
+    final o = widget.order;
+    _clothingTypeController = TextEditingController(text: o?.clothingType ?? '');
+    _priceController = TextEditingController(text: o != null ? o.price.toString() : '');
+    _amountPaidController = TextEditingController(text: o != null && o.amountPaid > 0 ? o.amountPaid.toString() : '');
+    _notesController = TextEditingController(text: o?.notes ?? '');
+    _deliveryDate = o?.deliveryDate;
+    _priority = o?.priority ?? false;
+    _imagePath = o?.imageUrl;
     _fetchCustomers();
+  }
+
+  @override
+  void dispose() {
+    _clothingTypeController.dispose();
+    _priceController.dispose();
+    _amountPaidController.dispose();
+    _notesController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchCustomers() async {
@@ -45,6 +73,31 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
     setState(() {
       _customers = data;
     });
+
+    final o = widget.order;
+    if (o != null) {
+      Customer? customer;
+      for (final c in data) {
+        if (c.id == o.customerId) {
+          customer = c;
+          break;
+        }
+      }
+      if (customer != null) {
+        setState(() => _selectedCustomer = customer);
+        await _fetchMeasurements(customer.id!);
+        Measurement? measurement;
+        for (final m in _measurements) {
+          if (m.id == o.measurementId) {
+            measurement = m;
+            break;
+          }
+        }
+        if (measurement != null) {
+          setState(() => _selectedMeasurement = measurement);
+        }
+      }
+    }
   }
 
   Future<void> _fetchMeasurements(int customerId) async {
@@ -54,9 +107,60 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
     });
   }
 
+  Future<void> _pickImage() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_camera_outlined, color: AppColors.primary),
+              title: const Text("Take Photo"),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined, color: AppColors.primary),
+              title: const Text("Choose from Gallery"),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+            if (_imagePath != null)
+              ListTile(
+                leading: const Icon(Icons.delete_outline_rounded, color: Colors.red),
+                title: const Text("Remove Photo", style: TextStyle(color: Colors.red)),
+                onTap: () => Navigator.pop(context),
+              ),
+          ],
+        ),
+      ),
+    );
+
+    if (source == null) {
+      setState(() => _imagePath = null);
+      return;
+    }
+
+    final picked = await ImagePicker().pickImage(source: source, imageQuality: 85);
+    if (picked == null) return;
+
+    final docsDir = await getApplicationDocumentsDirectory();
+    final photosDir = Directory(p.join(docsDir.path, 'order_photos'));
+    if (!await photosDir.exists()) await photosDir.create(recursive: true);
+    final destPath = p.join(photosDir.path, 'order_${DateTime.now().microsecondsSinceEpoch}.jpg');
+    await File(picked.path).copy(destPath);
+
+    setState(() => _imagePath = destPath);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final price = double.tryParse(_priceController.text) ?? 0;
+    final amountPaid = double.tryParse(_amountPaidController.text) ?? 0;
+    final overpaid = amountPaid > price && price > 0;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -66,7 +170,10 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
             gradient: AppColors.primaryGradient,
           ),
         ),
-        title: Text(l10n.newOrder, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        title: Text(
+          _isEditing ? "Edit Order" : l10n.newOrder,
+          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Form(
@@ -154,25 +261,56 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                     validator: (v) => v == null || v.isEmpty ? 'Please enter clothing type' : null,
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _priceController,
-                    decoration: InputDecoration(
-                      labelText: l10n.price,
-                      prefixIcon: const Icon(Icons.payments_outlined, color: AppColors.primary),
-                      filled: true,
-                      fillColor: AppColors.background,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-                    ),
-                    keyboardType: TextInputType.number,
-                    validator: (v) => v == null || v.isEmpty ? 'Please enter price' : null,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _priceController,
+                          decoration: InputDecoration(
+                            labelText: l10n.price,
+                            prefixIcon: const Icon(Icons.payments_outlined, color: AppColors.primary),
+                            filled: true,
+                            fillColor: AppColors.background,
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                          ),
+                          keyboardType: TextInputType.number,
+                          onChanged: (_) => setState(() {}),
+                          validator: (v) => v == null || v.isEmpty ? 'Please enter price' : null,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: TextFormField(
+                          controller: _amountPaidController,
+                          decoration: InputDecoration(
+                            labelText: "Amount Paid",
+                            prefixIcon: const Icon(Icons.account_balance_wallet_outlined, color: AppColors.primary),
+                            filled: true,
+                            fillColor: AppColors.background,
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                          ),
+                          keyboardType: TextInputType.number,
+                          onChanged: (_) => setState(() {}),
+                        ),
+                      ),
+                    ],
                   ),
+                  if (overpaid) ...[
+                    const SizedBox(height: 6),
+                    const Text(
+                      "Amount paid is more than the price — please double-check.",
+                      style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.w600),
+                    ),
+                  ],
                   const SizedBox(height: 16),
                   InkWell(
                     onTap: () async {
                       final date = await showDatePicker(
                         context: context,
-                        initialDate: DateTime.now().add(const Duration(days: 1)),
+                        initialDate: _deliveryDate ?? DateTime.now().add(const Duration(days: 1)),
                         firstDate: DateTime.now(),
                         lastDate: DateTime.now().add(const Duration(days: 365)),
                       );
@@ -194,6 +332,19 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
+                  ChoiceChip(
+                    label: const Text("Urgent", style: TextStyle(fontWeight: FontWeight.bold)),
+                    avatar: Icon(Icons.priority_high_rounded, size: 18, color: _priority ? Colors.white : AppColors.primary),
+                    selected: _priority,
+                    onSelected: (v) => setState(() => _priority = v),
+                    selectedColor: AppColors.primary,
+                    backgroundColor: AppColors.background,
+                    labelStyle: TextStyle(color: _priority ? Colors.white : AppColors.textDark),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    side: BorderSide(color: _priority ? AppColors.primary : Colors.grey.shade300),
+                    showCheckmark: false,
+                  ),
+                  const SizedBox(height: 16),
                   TextFormField(
                     controller: _notesController,
                     maxLines: 2,
@@ -204,6 +355,45 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                       fillColor: AppColors.background,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
                       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  InkWell(
+                    onTap: _pickImage,
+                    borderRadius: BorderRadius.circular(14),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.background,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: _imagePath == null
+                          ? const Row(
+                              children: [
+                                Icon(Icons.add_a_photo_outlined, color: AppColors.primary),
+                                SizedBox(width: 12),
+                                Text("Add Reference Photo", style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textDark)),
+                              ],
+                            )
+                          : Row(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Image.file(
+                                    File(_imagePath!),
+                                    width: 48,
+                                    height: 48,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image_outlined, color: AppColors.primary),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                const Expanded(
+                                  child: Text("Tap to change photo", style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textDark)),
+                                ),
+                              ],
+                            ),
                     ),
                   ),
                 ],
@@ -239,17 +429,25 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
     setState(() => _isSaving = true);
 
     final order = Order(
+      id: widget.order?.id,
       customerId: _selectedCustomer!.id!,
       measurementId: _selectedMeasurement!.id!,
       clothingType: _clothingTypeController.text,
       price: double.tryParse(_priceController.text) ?? 0,
+      amountPaid: double.tryParse(_amountPaidController.text) ?? 0,
+      priority: _priority,
       deliveryDate: _deliveryDate,
-      status: 'Pending',
+      status: widget.order?.status ?? 'Pending',
       notes: _notesController.text,
+      imageUrl: _imagePath,
     );
 
     try {
-      await _orderRepository.create(order);
+      if (_isEditing) {
+        await _orderRepository.update(order);
+      } else {
+        await _orderRepository.create(order);
+      }
       if (mounted) {
         context.read<BackupProvider>().syncInBackground();
         Navigator.pop(context);

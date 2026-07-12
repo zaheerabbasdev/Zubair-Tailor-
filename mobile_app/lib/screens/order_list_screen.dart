@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
@@ -144,28 +146,56 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                           child: Row(
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              Container(
-                                                padding: const EdgeInsets.all(10),
-                                                decoration: BoxDecoration(
-                                                  color: AppColors.primary.withOpacity(0.08),
-                                                  borderRadius: BorderRadius.circular(12),
-                                                ),
-                                                child: const Icon(Icons.shopping_bag_outlined, color: AppColors.primary),
-                                              ),
+                                              order.imageUrl != null
+                                                  ? ClipRRect(
+                                                      borderRadius: BorderRadius.circular(12),
+                                                      child: Image.file(
+                                                        File(order.imageUrl!),
+                                                        width: 44,
+                                                        height: 44,
+                                                        fit: BoxFit.cover,
+                                                        errorBuilder: (context, error, stackTrace) => Container(
+                                                          padding: const EdgeInsets.all(10),
+                                                          decoration: BoxDecoration(
+                                                            color: AppColors.primary.withOpacity(0.08),
+                                                            borderRadius: BorderRadius.circular(12),
+                                                          ),
+                                                          child: const Icon(Icons.image_not_supported_outlined, color: AppColors.primary),
+                                                        ),
+                                                      ),
+                                                    )
+                                                  : Container(
+                                                      padding: const EdgeInsets.all(10),
+                                                      decoration: BoxDecoration(
+                                                        color: AppColors.primary.withOpacity(0.08),
+                                                        borderRadius: BorderRadius.circular(12),
+                                                      ),
+                                                      child: const Icon(Icons.shopping_bag_outlined, color: AppColors.primary),
+                                                    ),
                                               const SizedBox(width: 16),
                                               Expanded(
                                                 child: Column(
                                                   crossAxisAlignment: CrossAxisAlignment.start,
                                                   children: [
-                                                    Text(
-                                                      order.customerName ?? "Unknown / نامعلوم",
-                                                      overflow: TextOverflow.ellipsis,
-                                                      maxLines: 1,
-                                                      style: const TextStyle(
-                                                        fontWeight: FontWeight.bold,
-                                                        fontSize: 16,
-                                                        color: AppColors.textDark,
-                                                      ),
+                                                    Row(
+                                                      children: [
+                                                        if (order.priority) ...[
+                                                          const Icon(Icons.priority_high_rounded, color: AppColors.primary, size: 16),
+                                                          const SizedBox(width: 2),
+                                                        ],
+                                                        Expanded(
+                                                          child: Text(
+                                                            order.customerName ?? "Unknown / نامعلوم",
+                                                            overflow: TextOverflow.ellipsis,
+                                                            maxLines: 1,
+                                                            style: const TextStyle(
+                                                              fontWeight: FontWeight.bold,
+                                                              fontSize: 16,
+                                                              color: AppColors.textDark,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
                                                     const SizedBox(height: 6),
                                                     Text(
@@ -208,6 +238,20 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                                       color: AppColors.textDark,
                                                     ),
                                                   ),
+                                                  if (order.price - order.amountPaid > 0) ...[
+                                                    const SizedBox(height: 4),
+                                                    Container(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                                      decoration: BoxDecoration(
+                                                        color: AppColors.primary.withOpacity(0.1),
+                                                        borderRadius: BorderRadius.circular(8),
+                                                      ),
+                                                      child: Text(
+                                                        "Due: Rs. ${order.price - order.amountPaid}",
+                                                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary),
+                                                      ),
+                                                    ),
+                                                  ],
                                                   const SizedBox(height: 8),
                                                   _buildStatusBadge(order.status),
                                                 ],
@@ -221,6 +265,17 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                           child: Row(
                                             mainAxisAlignment: MainAxisAlignment.end,
                                             children: [
+                                              TextButton.icon(
+                                                icon: const Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
+                                                label: const Text(
+                                                  "Edit",
+                                                  style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 13),
+                                                ),
+                                                onPressed: () => Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(builder: (_) => OrderFormScreen(order: order)),
+                                                ).then((_) => _fetchOrders()),
+                                              ),
                                               TextButton.icon(
                                                 icon: Icon(
                                                   Icons.edit_road_rounded,

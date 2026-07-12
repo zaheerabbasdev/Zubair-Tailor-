@@ -22,7 +22,7 @@ class DatabaseHelper {
     final path = await databasePath;
     return openDatabase(
       path,
-      version: 1,
+      version: 2,
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
       },
@@ -33,7 +33,8 @@ class DatabaseHelper {
             unique_id  TEXT    NOT NULL UNIQUE,
             name       TEXT    NOT NULL,
             phone      TEXT    NOT NULL,
-            address    TEXT
+            address    TEXT,
+            notes      TEXT
           )
         ''');
         await db.execute('CREATE INDEX idx_customers_phone ON customers(phone)');
@@ -77,6 +78,8 @@ class DatabaseHelper {
             measurement_id  INTEGER NOT NULL,
             clothing_type   TEXT NOT NULL,
             price           REAL NOT NULL,
+            amount_paid     REAL NOT NULL DEFAULT 0,
+            priority        INTEGER NOT NULL DEFAULT 0,
             delivery_date   TEXT,
             status          TEXT NOT NULL DEFAULT 'Pending',
             notes           TEXT,
@@ -88,6 +91,13 @@ class DatabaseHelper {
         ''');
         await db.execute('CREATE INDEX idx_orders_customer_id ON orders(customer_id)');
         await db.execute('CREATE INDEX idx_orders_status ON orders(status)');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute('ALTER TABLE orders ADD COLUMN amount_paid REAL NOT NULL DEFAULT 0');
+          await db.execute('ALTER TABLE orders ADD COLUMN priority INTEGER NOT NULL DEFAULT 0');
+          await db.execute('ALTER TABLE customers ADD COLUMN notes TEXT');
+        }
       },
     );
   }

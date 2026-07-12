@@ -29,6 +29,14 @@ class CustomerRepository {
     });
   }
 
+  Future<void> update(Customer customer) async {
+    final db = await DatabaseHelper.instance.database;
+    final data = customer.toJson()
+      ..remove('id')
+      ..remove('unique_id');
+    await db.update('customers', data, where: 'id = ?', whereArgs: [customer.id]);
+  }
+
   Future<void> delete(int id) async {
     final db = await DatabaseHelper.instance.database;
     final result = await db.rawQuery(

@@ -1,12 +1,18 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/customer.dart';
 import '../models/measurement.dart';
+import '../models/order.dart';
 import '../providers/backup_provider.dart';
 import '../repositories/customer_repository.dart';
 import '../repositories/measurement_repository.dart';
+import '../repositories/order_repository.dart';
 import 'measurement_form_screen.dart';
+import 'order_form_screen.dart';
+import '../widgets/add_customer_sheet.dart';
 import '../utils/app_colors.dart';
 
 class CustomerDetailScreen extends StatefulWidget {
@@ -20,21 +26,27 @@ class CustomerDetailScreen extends StatefulWidget {
 class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
   final CustomerRepository _customerRepository = CustomerRepository();
   final MeasurementRepository _measurementRepository = MeasurementRepository();
+  final OrderRepository _orderRepository = OrderRepository();
+  late Customer _customer;
   List<Measurement> _measurements = [];
+  List<Order> _orders = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _fetchMeasurements();
+    _customer = widget.customer;
+    _fetchData();
   }
 
-  Future<void> _fetchMeasurements() async {
+  Future<void> _fetchData() async {
     try {
-      final data = await _measurementRepository.getForCustomer(widget.customer.id!);
+      final measurements = await _measurementRepository.getForCustomer(_customer.id!);
+      final orders = await _orderRepository.getForCustomer(_customer.id!);
       if (mounted) {
         setState(() {
-          _measurements = data;
+          _measurements = measurements;
+          _orders = orders;
           _isLoading = false;
         });
       }
@@ -44,6 +56,21 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           _isLoading = false;
         });
       }
+    }
+  }
+
+  Future<void> _editCustomer() async {
+    final result = await showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(16),
+        child: AddCustomerSheet(customer: _customer),
+      ),
+    );
+
+    if (result is Customer && mounted) {
+      setState(() => _customer = result);
     }
   }
 
@@ -59,9 +86,14 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
             gradient: AppColors.primaryGradient,
           ),
         ),
-        title: Text(widget.customer.name, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        title: Text(_customer.name, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.edit_outlined, color: Colors.white),
+            onPressed: _editCustomer,
+            tooltip: "Edit",
+          ),
           IconButton(
             icon: const Icon(Icons.delete_outline_rounded, color: Colors.white),
             onPressed: () => _showDeleteConfirmation(context, l10n),
@@ -72,7 +104,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
-              onRefresh: _fetchMeasurements,
+              onRefresh: _fetchData,
               child: ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
@@ -104,9 +136,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                             ? () => Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => MeasurementFormScreen(customer: widget.customer),
+                                    builder: (_) => MeasurementFormScreen(customer: _customer),
                                   ),
-                                ).then((_) => _fetchMeasurements())
+                                ).then((_) => _fetchData())
                             : null,
                       ),
                     ],
@@ -134,6 +166,47 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                     )
                   else
                     ..._measurements.map((m) => _buildMeasurementCard(m, l10n)),
+
+                  const SizedBox(height: 32),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        l10n.totalOrders,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textDark,
+                            ),
+                      ),
+                      Text(
+                        "${_orders.length}",
+                        style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textMedium),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  if (_orders.isEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: AppColors.cardShadow,
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(Icons.shopping_bag_outlined, size: 48, color: Colors.grey.shade300),
+                          const SizedBox(height: 16),
+                          Text(
+                            "No orders found",
+                            style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w500),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    ..._orders.map((o) => _buildOrderCard(o)),
                 ],
               ),
             ),
@@ -155,7 +228,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           ElevatedButton(
             onPressed: () async {
               try {
-                await _customerRepository.delete(widget.customer.id!);
+                await _customerRepository.delete(_customer.id!);
                 if (mounted) {
                   context.read<BackupProvider>().syncInBackground();
                   Navigator.pop(ctx);
@@ -210,7 +283,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.customer.name,
+                      _customer.name,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 22,
@@ -227,7 +300,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            "ID: ${widget.customer.uniqueId ?? '---'}",
+                            "ID: ${_customer.uniqueId ?? '---'}",
                             style: const TextStyle(
                               color: AppColors.textDark,
                               fontWeight: FontWeight.bold,
@@ -241,7 +314,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                             const Icon(Icons.phone_rounded, color: Colors.white70, size: 14),
                             const SizedBox(width: 4),
                             Text(
-                              widget.customer.phone,
+                              _customer.phone,
                               style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500),
                             ),
                           ],
@@ -253,7 +326,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
               ),
             ],
           ),
-          if (widget.customer.address != null && widget.customer.address!.isNotEmpty) ...[
+          if (_customer.address != null && _customer.address!.isNotEmpty) ...[
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 14),
               child: Divider(color: Colors.white24, height: 1),
@@ -265,7 +338,30 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    widget.customer.address!,
+                    _customer.address!,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.85),
+                      fontSize: 13,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+          if (_customer.notes != null && _customer.notes!.isNotEmpty) ...[
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 14),
+              child: Divider(color: Colors.white24, height: 1),
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.sticky_note_2_outlined, color: AppColors.accent, size: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    _customer.notes!,
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.85),
                       fontSize: 13,
@@ -277,6 +373,136 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildOrderCard(Order o) {
+    final statusColor = AppColors.statusColor(o.status);
+    final due = o.price - o.amountPaid;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: AppColors.cardShadow,
+        border: Border.all(color: Colors.grey.shade100, width: 1),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border(left: BorderSide(color: statusColor, width: 5)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (o.imageUrl != null)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.file(
+                      File(o.imageUrl!),
+                      width: 48,
+                      height: 48,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.image_not_supported_outlined, color: AppColors.primary, size: 20),
+                      ),
+                    ),
+                  )
+                else
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.shopping_bag_outlined, color: AppColors.primary),
+                  ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          if (o.priority) ...[
+                            const Icon(Icons.priority_high_rounded, color: AppColors.primary, size: 16),
+                            const SizedBox(width: 4),
+                          ],
+                          Expanded(
+                            child: Text(
+                              o.clothingType,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.textDark),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        "Rs. ${o.price}",
+                        style: const TextStyle(fontSize: 13, color: AppColors.textMedium, fontWeight: FontWeight.w600),
+                      ),
+                      if (due > 0) ...[
+                        const SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            "Due: Rs. $due",
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: statusColor.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: statusColor.withOpacity(0.2), width: 1),
+                      ),
+                      child: Text(
+                        o.status,
+                        style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    IconButton(
+                      icon: const Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => OrderFormScreen(order: o)),
+                      ).then((_) => _fetchData()),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -373,9 +599,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                         onPressed: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => MeasurementFormScreen(customer: widget.customer, measurement: m),
+                            builder: (_) => MeasurementFormScreen(customer: _customer, measurement: m),
                           ),
-                        ).then((_) => _fetchMeasurements()),
+                        ).then((_) => _fetchData()),
                         icon: const Icon(Icons.edit_note_rounded, size: 22, color: Colors.white),
                         label: const Text(
                           "Edit Measurement / ناپ تبدیل کریں",

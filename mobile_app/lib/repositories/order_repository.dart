@@ -13,6 +13,18 @@ class OrderRepository {
     return rows.map((r) => Order.fromJson(r)).toList();
   }
 
+  Future<List<Order>> getForCustomer(int customerId) async {
+    final db = await DatabaseHelper.instance.database;
+    final rows = await db.rawQuery('''
+      SELECT o.*, c.name AS customer_name, c.phone AS customer_phone
+      FROM orders o
+      JOIN customers c ON c.id = o.customer_id
+      WHERE o.customer_id = ?
+      ORDER BY o.id DESC
+    ''', [customerId]);
+    return rows.map((r) => Order.fromJson(r)).toList();
+  }
+
   Future<Order> create(Order order) async {
     final db = await DatabaseHelper.instance.database;
     final data = order.toJson();

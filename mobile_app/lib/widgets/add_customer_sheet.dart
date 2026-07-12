@@ -7,7 +7,8 @@ import '../l10n/app_localizations.dart';
 import '../utils/app_colors.dart';
 
 class AddCustomerSheet extends StatefulWidget {
-  const AddCustomerSheet({super.key});
+  final Customer? customer;
+  const AddCustomerSheet({super.key, this.customer});
 
   @override
   State<AddCustomerSheet> createState() => _AddCustomerSheetState();
@@ -15,17 +16,30 @@ class AddCustomerSheet extends StatefulWidget {
 
 class _AddCustomerSheetState extends State<AddCustomerSheet> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _addressController = TextEditingController();
+  late final TextEditingController _nameController;
+  late final TextEditingController _phoneController;
+  late final TextEditingController _addressController;
+  late final TextEditingController _notesController;
   final CustomerRepository _customerRepository = CustomerRepository();
   bool _isLoading = false;
+
+  bool get _isEditing => widget.customer != null;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.customer?.name ?? '');
+    _phoneController = TextEditingController(text: widget.customer?.phone ?? '');
+    _addressController = TextEditingController(text: widget.customer?.address ?? '');
+    _notesController = TextEditingController(text: widget.customer?.notes ?? '');
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
+    _notesController.dispose();
     super.dispose();
   }
 
@@ -34,24 +48,35 @@ class _AddCustomerSheetState extends State<AddCustomerSheet> {
 
     setState(() => _isLoading = true);
 
+    final customer = Customer(
+      id: widget.customer?.id,
+      uniqueId: widget.customer?.uniqueId,
+      name: _nameController.text,
+      phone: _phoneController.text,
+      address: _addressController.text,
+      notes: _notesController.text,
+    );
+
     try {
-      await _customerRepository.add(Customer(
-        name: _nameController.text,
-        phone: _phoneController.text,
-        address: _addressController.text,
-      ));
+      Customer saved;
+      if (_isEditing) {
+        await _customerRepository.update(customer);
+        saved = customer;
+      } else {
+        saved = await _customerRepository.add(customer);
+      }
 
       if (mounted) {
         context.read<BackupProvider>().syncInBackground();
-        Navigator.pop(context, true); // Return true to indicate success
+        Navigator.pop(context, saved);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Customer added successfully!')),
+          SnackBar(content: Text(_isEditing ? 'Customer updated successfully!' : 'Customer added successfully!')),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add customer: $e')),
+          SnackBar(content: Text('Failed to save customer: $e')),
         );
       }
     } finally {
@@ -84,7 +109,7 @@ class _AddCustomerSheetState extends State<AddCustomerSheet> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      l10n.addCustomer,
+                      _isEditing ? "Edit Customer" : l10n.addCustomer,
                       style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primary),
                     ),
                     IconButton(
@@ -131,6 +156,20 @@ class _AddCustomerSheetState extends State<AddCustomerSheet> {
                   decoration: InputDecoration(
                     labelText: l10n.address,
                     prefixIcon: const Icon(Icons.location_on_outlined, color: AppColors.primary),
+                    filled: true,
+                    fillColor: AppColors.background,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                  ),
+                  maxLines: 2,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _notesController,
+                  decoration: InputDecoration(
+                    labelText: l10n.notes,
+                    alignLabelWithHint: true,
+                    prefixIcon: const Icon(Icons.sticky_note_2_outlined, color: AppColors.primary),
                     filled: true,
                     fillColor: AppColors.background,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),

@@ -285,7 +285,7 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
       ),
     );
 
-    if (result == true) {
+    if (result != null) {
       _fetchCustomers();
     }
   }

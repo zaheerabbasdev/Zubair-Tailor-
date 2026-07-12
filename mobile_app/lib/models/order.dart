@@ -4,6 +4,8 @@ class Order {
   final int measurementId;
   final String clothingType;
   final double price;
+  final double amountPaid;
+  final bool priority;
   final DateTime? deliveryDate;
   final String status;
   final String? notes;
@@ -17,6 +19,8 @@ class Order {
     required this.measurementId,
     required this.clothingType,
     required this.price,
+    this.amountPaid = 0,
+    this.priority = false,
     this.deliveryDate,
     required this.status,
     this.notes,
@@ -32,6 +36,8 @@ class Order {
       measurementId: json['measurement_id'],
       clothingType: json['clothing_type'],
       price: double.parse(json['price'].toString()),
+      amountPaid: json['amount_paid'] != null ? double.parse(json['amount_paid'].toString()) : 0.0,
+      priority: json['priority'] == 1 || json['priority'] == true,
       deliveryDate: json['delivery_date'] != null ? DateTime.parse(json['delivery_date']) : null,
       status: json['status'],
       notes: json['notes'],
@@ -48,6 +54,8 @@ class Order {
       'measurement_id': measurementId,
       'clothing_type': clothingType,
       'price': price,
+      'amount_paid': amountPaid,
+      'priority': priority ? 1 : 0,
       'delivery_date': deliveryDate?.toIso8601String(),
       'status': status,
       'notes': notes,
@@ -61,6 +69,8 @@ class Order {
     int? measurementId,
     String? clothingType,
     double? price,
+    double? amountPaid,
+    bool? priority,
     DateTime? deliveryDate,
     String? status,
     String? notes,
@@ -74,6 +84,8 @@ class Order {
       measurementId: measurementId ?? this.measurementId,
       clothingType: clothingType ?? this.clothingType,
       price: price ?? this.price,
+      amountPaid: amountPaid ?? this.amountPaid,
+      priority: priority ?? this.priority,
       deliveryDate: deliveryDate ?? this.deliveryDate,
       status: status ?? this.status,
       notes: notes ?? this.notes,
