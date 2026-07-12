@@ -1321,6 +1321,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Shop profile saved'**
   String get profileSaved;
+
+  /// No description provided for @license.
+  ///
+  /// In en, this message translates to:
+  /// **'License'**
+  String get license;
+
+  /// No description provided for @licenseActiveStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Activated'**
+  String get licenseActiveStatus;
+
+  /// No description provided for @licenseTrialStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days left in your free trial'**
+  String licenseTrialStatus(int days);
+
+  /// No description provided for @enterUnlockCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Unlock Code'**
+  String get enterUnlockCode;
+
+  /// No description provided for @unlockCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock Code'**
+  String get unlockCodeLabel;
+
+  /// No description provided for @activate.
+  ///
+  /// In en, this message translates to:
+  /// **'Activate'**
+  String get activate;
+
+  /// No description provided for @invalidUnlockCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid unlock code'**
+  String get invalidUnlockCode;
+
+  /// No description provided for @licenseActivatedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'App activated successfully!'**
+  String get licenseActivatedSuccess;
+
+  /// No description provided for @trialExpiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Trial Expired'**
+  String get trialExpiredTitle;
+
+  /// No description provided for @trialExpiredMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your free trial has ended. Enter your unlock code to keep using the app.'**
+  String get trialExpiredMessage;
 }
 
 class _AppLocalizationsDelegate

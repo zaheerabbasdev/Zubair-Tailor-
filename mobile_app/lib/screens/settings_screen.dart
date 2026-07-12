@@ -4,6 +4,7 @@ import 'package:googleapis/drive/v3.dart' as drive;
 import '../l10n/app_localizations.dart';
 import '../providers/app_lock_provider.dart';
 import '../providers/backup_provider.dart';
+import '../providers/license_provider.dart';
 import '../providers/locale_provider.dart';
 import '../providers/shop_profile_provider.dart';
 import '../providers/theme_provider.dart';
@@ -81,6 +82,13 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: 12),
           Consumer<AppLockProvider>(
             builder: (context, lock, _) => _buildAppLockCard(context, lock, l10n),
+          ),
+
+          const SizedBox(height: 32),
+          _buildSectionHeader(context, l10n.license, Icons.workspace_premium_outlined),
+          const SizedBox(height: 12),
+          Consumer<LicenseProvider>(
+            builder: (context, license, _) => _buildLicenseCard(context, license, l10n),
           ),
 
           const SizedBox(height: 32),
@@ -269,6 +277,83 @@ class SettingsScreen extends StatelessWidget {
         SnackBar(content: Text(l10n.incorrectPin)),
       );
     }
+  }
+
+  Widget _buildLicenseCard(BuildContext context, LicenseProvider license, AppLocalizations l10n) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: AppColors.cardShadow,
+        border: Border.all(color: AppColors.divider, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Icon(
+                license.isActivated ? Icons.verified_rounded : Icons.hourglass_bottom_rounded,
+                color: license.isActivated ? Colors.green : AppColors.accent,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  license.isActivated
+                      ? l10n.licenseActiveStatus
+                      : l10n.licenseTrialStatus(license.daysRemaining),
+                  style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark, fontSize: 15),
+                ),
+              ),
+            ],
+          ),
+          if (!license.isActivated) ...[
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: () => _enterUnlockCode(context, license),
+              icon: const Icon(Icons.key_rounded, size: 18),
+              label: Text(l10n.enterUnlockCode),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _enterUnlockCode(BuildContext context, LicenseProvider license) async {
+    final l10n = AppLocalizations.of(context)!;
+    final codeController = TextEditingController();
+    final activated = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.enterUnlockCode, style: const TextStyle(fontWeight: FontWeight.bold)),
+        content: TextField(
+          controller: codeController,
+          textCapitalization: TextCapitalization.characters,
+          decoration: InputDecoration(labelText: l10n.unlockCodeLabel),
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(l10n.cancel, style: TextStyle(color: AppColors.textMedium)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final ok = await license.activate(codeController.text);
+              if (dialogContext.mounted) Navigator.pop(dialogContext, ok);
+            },
+            child: Text(l10n.activate),
+          ),
+        ],
+      ),
+    );
+
+    if (!context.mounted || activated == null) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(activated ? l10n.licenseActivatedSuccess : l10n.invalidUnlockCode)),
+    );
   }
 
   Future<void> _exportCustomers(BuildContext context) async {

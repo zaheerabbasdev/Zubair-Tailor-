@@ -7,6 +7,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'l10n/app_localizations.dart';
 import 'providers/app_lock_provider.dart';
 import 'providers/backup_provider.dart';
+import 'providers/license_provider.dart';
 import 'providers/locale_provider.dart';
 import 'providers/shop_profile_provider.dart';
 import 'providers/theme_provider.dart';
@@ -36,6 +37,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(lazy: false, create: (_) => AppLockProvider()),
         ChangeNotifierProvider(lazy: false, create: (_) => ShopProfileProvider()),
+        ChangeNotifierProvider(lazy: false, create: (_) => LicenseProvider()),
       ],
       child: const MyApp(),
     ),

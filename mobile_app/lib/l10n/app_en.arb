@@ -231,5 +231,19 @@
   "shopProfileDescription": "Your shop's name, phone, and address appear on invoices and customer WhatsApp messages.",
   "shopName": "Shop Name",
   "pleaseEnterShopName": "Please enter a shop name",
-  "profileSaved": "Shop profile saved"
+  "profileSaved": "Shop profile saved",
+
+  "license": "License",
+  "licenseActiveStatus": "Activated",
+  "licenseTrialStatus": "{days} days left in your free trial",
+  "@licenseTrialStatus": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "enterUnlockCode": "Enter Unlock Code",
+  "unlockCodeLabel": "Unlock Code",
+  "activate": "Activate",
+  "invalidUnlockCode": "Invalid unlock code",
+  "licenseActivatedSuccess": "App activated successfully!",
+  "trialExpiredTitle": "Trial Expired",
+  "trialExpiredMessage": "Your free trial has ended. Enter your unlock code to keep using the app."
 }

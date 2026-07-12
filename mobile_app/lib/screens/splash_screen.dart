@@ -2,10 +2,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_lock_provider.dart';
+import '../providers/license_provider.dart';
 import '../providers/shop_profile_provider.dart';
 import '../utils/app_colors.dart';
 import 'app_lock_screen.dart';
 import 'dashboard_screen.dart';
+import 'trial_lock_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -52,11 +54,14 @@ class _SplashScreenState extends State<SplashScreen>
 
     Timer(const Duration(milliseconds: 2800), () {
       if (!mounted) return;
+      final trialExpired = context.read<LicenseProvider>().isTrialExpired;
       final locked = context.read<AppLockProvider>().isEnabled;
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(
-          pageBuilder: (_, __, ___) => locked ? const AppLockScreen() : const DashboardScreen(),
+          pageBuilder: (_, __, ___) => trialExpired
+              ? const TrialLockScreen()
+              : (locked ? const AppLockScreen() : const DashboardScreen()),
           transitionsBuilder: (_, anim, __, child) =>
               FadeTransition(opacity: anim, child: child),
           transitionDuration: const Duration(milliseconds: 500),

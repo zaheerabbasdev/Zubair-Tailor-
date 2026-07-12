@@ -216,5 +216,16 @@
   "shopProfileDescription": "آپ کی دکان کا نام، فون، اور پتہ انوائسز اور گاہکوں کے واٹس ایپ پیغامات پر ظاہر ہوگا۔",
   "shopName": "دکان کا نام",
   "pleaseEnterShopName": "براہ کرم دکان کا نام درج کریں",
-  "profileSaved": "دکان کی پروفائل محفوظ ہو گئی"
+  "profileSaved": "دکان کی پروفائل محفوظ ہو گئی",
+
+  "license": "لائسنس",
+  "licenseActiveStatus": "فعال",
+  "licenseTrialStatus": "آپ کے مفت ٹرائل میں {days} دن باقی ہیں",
+  "enterUnlockCode": "ان لاک کوڈ درج کریں",
+  "unlockCodeLabel": "ان لاک کوڈ",
+  "activate": "فعال کریں",
+  "invalidUnlockCode": "غلط ان لاک کوڈ",
+  "licenseActivatedSuccess": "ایپ کامیابی سے فعال ہو گئی!",
+  "trialExpiredTitle": "ٹرائل ختم ہو گیا",
+  "trialExpiredMessage": "آپ کا مفت ٹرائل ختم ہو گیا ہے۔ ایپ استعمال جاری رکھنے کے لیے اپنا ان لاک کوڈ درج کریں۔"
 }

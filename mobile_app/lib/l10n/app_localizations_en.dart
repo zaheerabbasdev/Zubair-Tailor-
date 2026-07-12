@@ -635,4 +635,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileSaved => 'Shop profile saved';
+
+  @override
+  String get license => 'License';
+
+  @override
+  String get licenseActiveStatus => 'Activated';
+
+  @override
+  String licenseTrialStatus(int days) {
+    return '$days days left in your free trial';
+  }
+
+  @override
+  String get enterUnlockCode => 'Enter Unlock Code';
+
+  @override
+  String get unlockCodeLabel => 'Unlock Code';
+
+  @override
+  String get activate => 'Activate';
+
+  @override
+  String get invalidUnlockCode => 'Invalid unlock code';
+
+  @override
+  String get licenseActivatedSuccess => 'App activated successfully!';
+
+  @override
+  String get trialExpiredTitle => 'Trial Expired';
+
+  @override
+  String get trialExpiredMessage =>
+      'Your free trial has ended. Enter your unlock code to keep using the app.';
 }

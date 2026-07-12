@@ -637,4 +637,37 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get profileSaved => 'دکان کی پروفائل محفوظ ہو گئی';
+
+  @override
+  String get license => 'لائسنس';
+
+  @override
+  String get licenseActiveStatus => 'فعال';
+
+  @override
+  String licenseTrialStatus(int days) {
+    return 'آپ کے مفت ٹرائل میں $days دن باقی ہیں';
+  }
+
+  @override
+  String get enterUnlockCode => 'ان لاک کوڈ درج کریں';
+
+  @override
+  String get unlockCodeLabel => 'ان لاک کوڈ';
+
+  @override
+  String get activate => 'فعال کریں';
+
+  @override
+  String get invalidUnlockCode => 'غلط ان لاک کوڈ';
+
+  @override
+  String get licenseActivatedSuccess => 'ایپ کامیابی سے فعال ہو گئی!';
+
+  @override
+  String get trialExpiredTitle => 'ٹرائل ختم ہو گیا';
+
+  @override
+  String get trialExpiredMessage =>
+      'آپ کا مفت ٹرائل ختم ہو گیا ہے۔ ایپ استعمال جاری رکھنے کے لیے اپنا ان لاک کوڈ درج کریں۔';
 }
