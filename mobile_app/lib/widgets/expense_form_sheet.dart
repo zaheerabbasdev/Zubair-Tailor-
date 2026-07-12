@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../models/expense.dart';
 import '../providers/theme_provider.dart';
 import '../repositories/expense_repository.dart';
 import '../utils/app_colors.dart';
+import '../utils/status_helper.dart';
 
 const List<String> kExpenseCategories = [
   'Fabric / Material',
@@ -72,7 +74,7 @@ class _ExpenseFormSheetState extends State<ExpenseFormSheet> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save expense: $e')),
+          SnackBar(content: Text('${AppLocalizations.of(context)!.failedToSaveExpense}: $e')),
         );
       }
     } finally {
@@ -83,6 +85,7 @@ class _ExpenseFormSheetState extends State<ExpenseFormSheet> {
   @override
   Widget build(BuildContext context) {
     AppColors.dark = context.watch<ThemeProvider>().isDark;
+    final l10n = AppLocalizations.of(context)!;
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
 
     return Padding(
@@ -105,7 +108,7 @@ class _ExpenseFormSheetState extends State<ExpenseFormSheet> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      _isEditing ? "Edit Expense" : "Add Expense",
+                      _isEditing ? l10n.editExpense : l10n.addExpense,
                       style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primary),
                     ),
                     IconButton(
@@ -122,21 +125,21 @@ class _ExpenseFormSheetState extends State<ExpenseFormSheet> {
                 DropdownButtonFormField<String>(
                   initialValue: _category,
                   decoration: InputDecoration(
-                    labelText: "Category",
+                    labelText: l10n.category,
                     prefixIcon: const Icon(Icons.category_outlined, color: AppColors.primary),
                     filled: true,
                     fillColor: AppColors.background,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
                     enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
                   ),
-                  items: kExpenseCategories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                  items: kExpenseCategories.map((c) => DropdownMenuItem(value: c, child: Text(localizedExpenseCategory(l10n, c)))).toList(),
                   onChanged: (v) => setState(() => _category = v ?? _category),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _amountController,
                   decoration: InputDecoration(
-                    labelText: "Amount",
+                    labelText: l10n.amount,
                     prefixIcon: const Icon(Icons.payments_outlined, color: AppColors.primary),
                     filled: true,
                     fillColor: AppColors.background,
@@ -144,7 +147,7 @@ class _ExpenseFormSheetState extends State<ExpenseFormSheet> {
                     enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
                   ),
                   keyboardType: TextInputType.number,
-                  validator: (v) => v == null || v.isEmpty ? 'Please enter an amount' : null,
+                  validator: (v) => v == null || v.isEmpty ? l10n.pleaseEnterAmount : null,
                 ),
                 const SizedBox(height: 16),
                 InkWell(
@@ -159,7 +162,7 @@ class _ExpenseFormSheetState extends State<ExpenseFormSheet> {
                   },
                   child: InputDecorator(
                     decoration: InputDecoration(
-                      labelText: "Date",
+                      labelText: l10n.date,
                       prefixIcon: const Icon(Icons.calendar_month_outlined, color: AppColors.primary),
                       filled: true,
                       fillColor: AppColors.background,
@@ -173,7 +176,7 @@ class _ExpenseFormSheetState extends State<ExpenseFormSheet> {
                 TextFormField(
                   controller: _notesController,
                   decoration: InputDecoration(
-                    labelText: "Notes",
+                    labelText: l10n.notes,
                     alignLabelWithHint: true,
                     prefixIcon: const Icon(Icons.sticky_note_2_outlined, color: AppColors.primary),
                     filled: true,
@@ -196,7 +199,7 @@ class _ExpenseFormSheetState extends State<ExpenseFormSheet> {
                   ),
                   child: _isLoading
                       ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text("Save", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      : Text(l10n.save, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ],
             ),

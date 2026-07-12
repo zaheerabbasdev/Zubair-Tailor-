@@ -12,6 +12,7 @@ import '../repositories/customer_repository.dart';
 import '../repositories/measurement_repository.dart';
 import '../repositories/order_repository.dart';
 import '../services/invoice_service.dart';
+import '../utils/status_helper.dart';
 import '../utils/whatsapp_helper.dart';
 import 'measurement_form_screen.dart';
 import 'order_form_screen.dart';
@@ -96,7 +97,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           IconButton(
             icon: const Icon(Icons.edit_outlined, color: Colors.white),
             onPressed: _editCustomer,
-            tooltip: "Edit",
+            tooltip: l10n.edit,
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline_rounded, color: Colors.white),
@@ -161,7 +162,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                           Icon(Icons.architecture_rounded, size: 48, color: AppColors.iconMuted),
                           const SizedBox(height: 16),
                           Text(
-                            "No measurements found / کوئی ناپ نہیں ملا",
+                            l10n.noMeasurementsFound,
                             style: TextStyle(color: AppColors.textMedium, fontWeight: FontWeight.w500),
                             textAlign: TextAlign.center,
                           ),
@@ -202,7 +203,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                           Icon(Icons.shopping_bag_outlined, size: 48, color: AppColors.iconMuted),
                           const SizedBox(height: 16),
                           Text(
-                            "No orders found",
+                            l10n.noOrdersFound,
                             style: TextStyle(color: AppColors.textMedium, fontWeight: FontWeight.w500),
                             textAlign: TextAlign.center,
                           ),
@@ -210,7 +211,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                       ),
                     )
                   else
-                    ..._orders.map((o) => _buildOrderCard(o)),
+                    ..._orders.map((o) => _buildOrderCard(o, l10n)),
                 ],
               ),
             ),
@@ -227,7 +228,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text("Cancel", style: TextStyle(color: AppColors.textMedium)),
+            child: Text(l10n.cancel, style: TextStyle(color: AppColors.textMedium)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -387,7 +388,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
   );
 
-  Widget _buildOrderCard(Order o) {
+  Widget _buildOrderCard(Order o, AppLocalizations l10n) {
     final statusColor = AppColors.statusColor(o.status);
     final due = o.price - o.amountPaid;
 
@@ -476,7 +477,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            "Due: Rs. $due",
+                            "${l10n.dueLabel}: Rs. $due",
                             style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary),
                           ),
                         ),
@@ -492,7 +493,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                     border: Border.all(color: statusColor.withOpacity(0.2), width: 1),
                   ),
                   child: Text(
-                    o.status,
+                    localizedStatus(l10n, o.status),
                     style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -508,7 +509,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                 TextButton.icon(
                   style: _compactActionButtonStyle,
                   icon: const Icon(Icons.chat_rounded, size: 16, color: AppColors.primary),
-                  label: const Text("WhatsApp", style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12)),
+                  label: Text(l10n.whatsapp, style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12)),
                   onPressed: () => sendWhatsAppMessage(
                     context,
                     phone: _customer.phone,
@@ -522,13 +523,13 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                 TextButton.icon(
                   style: _compactActionButtonStyle,
                   icon: const Icon(Icons.receipt_rounded, size: 16, color: AppColors.primary),
-                  label: const Text("Invoice", style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12)),
+                  label: Text(l10n.invoice, style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12)),
                   onPressed: () => InvoiceService.generateAndShareInvoice(o),
                 ),
                 TextButton.icon(
                   style: _compactActionButtonStyle,
                   icon: const Icon(Icons.edit_outlined, size: 16, color: AppColors.primary),
-                  label: const Text("Edit", style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12)),
+                  label: Text(l10n.edit, style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12)),
                   onPressed: () => Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => OrderFormScreen(order: o)),
@@ -560,7 +561,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           child: ExpansionTile(
             initiallyExpanded: true,
             title: Text(
-              "Created: ${m.createdAt != null ? m.createdAt!.split('T')[0] : 'N/A'}",
+              l10n.createdOn(m.createdAt != null ? m.createdAt!.split('T')[0] : l10n.na),
               style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark),
             ),
             leading: Container(
@@ -579,7 +580,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                   children: [
                     Divider(height: 1, color: AppColors.divider),
                     const SizedBox(height: 16),
-                    _buildSectionHeaderTitle("DIMENSIONS"),
+                    _buildSectionHeaderTitle(l10n.dimensions.toUpperCase()),
                     const SizedBox(height: 12),
                     _buildMeasurementRow(l10n.shirtLength, m.shirtLength, l10n.shirtWidth, m.shirtWidth),
                     _buildMeasurementRow(l10n.shoulder, m.shoulder, l10n.sleeve, m.sleeve),
@@ -588,13 +589,13 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                     _buildMeasurementRow(l10n.collar, m.collar, null, null),
 
                     const SizedBox(height: 20),
-                    _buildSectionHeaderTitle("STYLE"),
+                    _buildSectionHeaderTitle(l10n.style.toUpperCase()),
                     const SizedBox(height: 12),
                     _buildMeasurementRow(l10n.banType, _getLocalizedValue(m.banType, l10n), l10n.damanType, _getLocalizedValue(m.damanType, l10n)),
                     _buildMeasurementRow(l10n.sleeveType, _getLocalizedValue(m.sleeveType, l10n), null, null),
 
                     const SizedBox(height: 20),
-                    _buildSectionHeaderTitle("STITCHING DETAILS"),
+                    _buildSectionHeaderTitle(l10n.stitchingDetails.toUpperCase()),
                     const SizedBox(height: 12),
                     Wrap(
                       spacing: 8,
@@ -613,7 +614,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
 
                     if (m.notes != null && m.notes!.isNotEmpty) ...[
                       const SizedBox(height: 20),
-                      _buildSectionHeaderTitle("NOTES"),
+                      _buildSectionHeaderTitle(l10n.notes.toUpperCase()),
                       const SizedBox(height: 8),
                       Container(
                         width: double.infinity,
@@ -640,9 +641,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                           ),
                         ).then((_) => _fetchData()),
                         icon: const Icon(Icons.edit_note_rounded, size: 22, color: Colors.white),
-                        label: const Text(
-                          "Edit Measurement / ناپ تبدیل کریں",
-                          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                        label: Text(
+                          l10n.editMeasurement,
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,

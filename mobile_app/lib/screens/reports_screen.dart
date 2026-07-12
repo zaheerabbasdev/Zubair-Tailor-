@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../models/expense.dart';
 import '../models/order.dart';
 import '../providers/theme_provider.dart';
@@ -7,6 +8,7 @@ import '../repositories/customer_repository.dart';
 import '../repositories/expense_repository.dart';
 import '../repositories/order_repository.dart';
 import '../utils/app_colors.dart';
+import '../utils/status_helper.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});
@@ -71,6 +73,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   @override
   Widget build(BuildContext context) {
     AppColors.dark = context.watch<ThemeProvider>().isDark;
+    final l10n = AppLocalizations.of(context)!;
     final orders = _filteredOrders;
 
     final expenses = _filteredExpenses;
@@ -103,7 +106,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
         flexibleSpace: Container(
           decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
         ),
-        title: const Text("Reports", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        title: Text(l10n.reports, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading
@@ -118,7 +121,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     children: ['This Month', 'Last 30 Days', 'All Time'].map((r) {
                       final selected = _range == r;
                       return ChoiceChip(
-                        label: Text(r, style: TextStyle(fontWeight: FontWeight.bold, color: selected ? Colors.white : AppColors.textDark, fontSize: 13)),
+                        label: Text(localizedRange(l10n, r), style: TextStyle(fontWeight: FontWeight.bold, color: selected ? Colors.white : AppColors.textDark, fontSize: 13)),
                         selected: selected,
                         onSelected: (_) => setState(() => _range = r),
                         selectedColor: AppColors.primary,
@@ -135,7 +138,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     children: [
                       Expanded(
                         child: _buildStatCard(
-                          title: "Revenue Collected",
+                          title: l10n.revenueCollected,
                           value: "Rs. ${revenue.toStringAsFixed(0)}",
                           icon: Icons.payments_outlined,
                           accentColor: AppColors.statusReady,
@@ -144,7 +147,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       const SizedBox(width: 16),
                       Expanded(
                         child: _buildStatCard(
-                          title: "Outstanding",
+                          title: l10n.outstanding,
                           value: "Rs. ${outstanding.toStringAsFixed(0)}",
                           icon: Icons.hourglass_bottom_rounded,
                           accentColor: AppColors.statusPending,
@@ -157,7 +160,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     children: [
                       Expanded(
                         child: _buildStatCard(
-                          title: "Total Expenses",
+                          title: l10n.totalExpenses,
                           value: "Rs. ${totalExpenses.toStringAsFixed(0)}",
                           icon: Icons.receipt_long_outlined,
                           accentColor: Colors.deepPurple,
@@ -166,7 +169,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       const SizedBox(width: 16),
                       Expanded(
                         child: _buildStatCard(
-                          title: "Net Profit",
+                          title: l10n.netProfit,
                           value: "Rs. ${netProfit.toStringAsFixed(0)}",
                           icon: Icons.trending_up_rounded,
                           accentColor: netProfit >= 0 ? AppColors.statusReady : AppColors.primary,
@@ -176,7 +179,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   ),
                   const SizedBox(height: 16),
                   _buildStatCard(
-                    title: "Total Customers (All Time)",
+                    title: l10n.totalCustomersAllTime,
                     value: "$_totalCustomers",
                     icon: Icons.people_outline_rounded,
                     accentColor: AppColors.primary,
@@ -184,19 +187,20 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   ),
 
                   const SizedBox(height: 32),
-                  Text("Orders by Status", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                  Text(l10n.ordersByStatus, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                   const SizedBox(height: 12),
                   _buildBarSection(
                     entries: statusCounts.entries.map((e) => MapEntry(e.key, e.value)).toList(),
                     maxValue: maxStatusCount,
                     colorFor: (label) => AppColors.statusColor(label),
+                    labelFor: (label) => localizedStatus(l10n, label),
                   ),
 
                   const SizedBox(height: 32),
-                  Text("Orders by Clothing Type", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                  Text(l10n.ordersByClothingType, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                   const SizedBox(height: 12),
                   sortedTypes.isEmpty
-                      ? Text("No orders in this range", style: TextStyle(color: AppColors.textMedium))
+                      ? Text(l10n.noOrdersInRange, style: TextStyle(color: AppColors.textMedium))
                       : _buildBarSection(
                           entries: sortedTypes.map((e) => MapEntry(e.key, e.value)).toList(),
                           maxValue: maxTypeCount,
@@ -257,6 +261,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     required List<MapEntry<String, int>> entries,
     required int maxValue,
     required Color Function(String label) colorFor,
+    String Function(String label)? labelFor,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -277,7 +282,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(e.key, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textDark)),
+                    Text(labelFor != null ? labelFor(e.key) : e.key, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textDark)),
                     Text("${e.value}", style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: color)),
                   ],
                 ),

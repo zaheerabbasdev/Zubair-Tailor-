@@ -11,6 +11,7 @@ import '../services/invoice_service.dart';
 import '../services/notification_service.dart';
 import 'order_form_screen.dart';
 import '../utils/app_colors.dart';
+import '../utils/status_helper.dart';
 import '../utils/whatsapp_helper.dart';
 
 class OrderListScreen extends StatefulWidget {
@@ -94,7 +95,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                   padding: const EdgeInsets.only(right: 8),
                   child: ChoiceChip(
                     label: Text(
-                      filter,
+                      localizedStatus(l10n, filter),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: isSelected ? Colors.white : AppColors.textDark,
@@ -190,7 +191,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                                         ],
                                                         Expanded(
                                                           child: Text(
-                                                            order.customerName ?? "Unknown / نامعلوم",
+                                                            order.customerName ?? l10n.unknown,
                                                             overflow: TextOverflow.ellipsis,
                                                             maxLines: 1,
                                                             style: TextStyle(
@@ -252,13 +253,13 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                                         borderRadius: BorderRadius.circular(8),
                                                       ),
                                                       child: Text(
-                                                        "Due: Rs. ${order.price - order.amountPaid}",
+                                                        "${l10n.dueLabel}: Rs. ${order.price - order.amountPaid}",
                                                         style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary),
                                                       ),
                                                     ),
                                                   ],
                                                   const SizedBox(height: 8),
-                                                  _buildStatusBadge(order.status),
+                                                  _buildStatusBadge(order.status, l10n),
                                                 ],
                                               ),
                                             ],
@@ -275,9 +276,9 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                               if (order.customerPhone != null)
                                                 TextButton.icon(
                                                   icon: const Icon(Icons.chat_rounded, size: 18, color: AppColors.primary),
-                                                  label: const Text(
-                                                    "WhatsApp",
-                                                    style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 13),
+                                                  label: Text(
+                                                    l10n.whatsapp,
+                                                    style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 13),
                                                   ),
                                                   onPressed: () => sendWhatsAppMessage(
                                                     context,
@@ -291,17 +292,17 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                                 ),
                                               TextButton.icon(
                                                 icon: const Icon(Icons.receipt_rounded, size: 18, color: AppColors.primary),
-                                                label: const Text(
-                                                  "Invoice",
-                                                  style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 13),
+                                                label: Text(
+                                                  l10n.invoice,
+                                                  style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 13),
                                                 ),
                                                 onPressed: () => InvoiceService.generateAndShareInvoice(order),
                                               ),
                                               TextButton.icon(
                                                 icon: const Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
-                                                label: const Text(
-                                                  "Edit",
-                                                  style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 13),
+                                                label: Text(
+                                                  l10n.edit,
+                                                  style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 13),
                                                 ),
                                                 onPressed: () => Navigator.push(
                                                   context,
@@ -315,7 +316,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                                   color: order.status == 'Delivered' ? Colors.grey : AppColors.primary,
                                                 ),
                                                 label: Text(
-                                                  "Update Status / اسٹیٹس تبدیل کریں",
+                                                  l10n.updateStatus,
                                                   style: TextStyle(
                                                     color: order.status == 'Delivered' ? Colors.grey : AppColors.primary,
                                                     fontWeight: FontWeight.bold,
@@ -369,7 +370,9 @@ class _OrderListScreenState extends State<OrderListScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                "No ${_selectedFilter == 'All' ? '' : _selectedFilter} orders found",
+                _selectedFilter == 'All'
+                    ? l10n.noOrdersFound
+                    : l10n.noOrdersFoundFilter(localizedStatus(l10n, _selectedFilter)),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -378,7 +381,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                "Tap the + button to create a new order",
+                l10n.tapToCreateOrder,
                 style: TextStyle(
                   fontSize: 14,
                   color: AppColors.textMedium,
@@ -391,7 +394,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
     );
   }
 
-  Widget _buildStatusBadge(String status) {
+  Widget _buildStatusBadge(String status, AppLocalizations l10n) {
     final color = AppColors.statusColor(status);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -401,7 +404,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
         border: Border.all(color: color.withOpacity(0.2), width: 1),
       ),
       child: Text(
-        status,
+        localizedStatus(l10n, status),
         style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold),
       ),
     );
@@ -442,7 +445,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                   height: 12,
                   decoration: BoxDecoration(color: statusColor, shape: BoxShape.circle),
                 ),
-                title: Text(status, style: const TextStyle(fontWeight: FontWeight.bold)),
+                title: Text(localizedStatus(l10n, status), style: const TextStyle(fontWeight: FontWeight.bold)),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 onTap: () async {

@@ -107,7 +107,7 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
           ),
         ),
         title: Text(
-          widget.measurement == null ? "Add Measurement" : "Edit Measurement",
+          widget.measurement == null ? l10n.addMeasurement : l10n.editMeasurement,
           style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
@@ -126,7 +126,7 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
           children: [
             _buildSectionCard(
               icon: Icons.straighten_rounded,
-              title: "Dimensions / پیمائش",
+              title: l10n.dimensions,
               children: [
                 _buildTwoFieldRow(l10n.shirtLength, _shirtLengthCont, l10n.shirtWidth, _shirtWidthCont),
                 const SizedBox(height: 16),
@@ -237,7 +237,7 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceCard,
         borderRadius: BorderRadius.circular(20),
         boxShadow: AppColors.cardShadow,
       ),
@@ -288,7 +288,7 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             suffixIcon: PopupMenuButton<String>(
               icon: const Icon(Icons.add_circle_outline, color: AppColors.accent),
-              tooltip: 'Add Fraction',
+              tooltip: AppLocalizations.of(context)!.addFraction,
               onSelected: (String value) {
                 String currentText = controller.text;
                 currentText = currentText.replaceAll(RegExp(r'\s*[¼½¾]+$'), '');
@@ -405,7 +405,7 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error saving measurements / ناپ محفوظ کرنے میں خرابی')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.errorSavingMeasurement)),
         );
       }
     }

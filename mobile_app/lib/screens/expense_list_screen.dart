@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../models/expense.dart';
 import '../providers/theme_provider.dart';
 import '../repositories/expense_repository.dart';
 import '../widgets/expense_form_sheet.dart';
 import '../utils/app_colors.dart';
+import '../utils/status_helper.dart';
 
 class ExpenseListScreen extends StatefulWidget {
   const ExpenseListScreen({super.key});
@@ -53,16 +55,17 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
   }
 
   Future<void> _delete(Expense expense) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Delete Expense", style: TextStyle(fontWeight: FontWeight.bold)),
-        content: const Text("Are you sure you want to delete this expense?"),
+        title: Text(l10n.deleteExpense, style: const TextStyle(fontWeight: FontWeight.bold)),
+        content: Text(l10n.deleteExpenseConfirm),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text("Cancel", style: TextStyle(color: AppColors.textMedium)),
+            child: Text(l10n.cancel, style: TextStyle(color: AppColors.textMedium)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -71,7 +74,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text("Delete"),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -86,6 +89,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
   @override
   Widget build(BuildContext context) {
     AppColors.dark = context.watch<ThemeProvider>().isDark;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -93,7 +97,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
         flexibleSpace: Container(
           decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
         ),
-        title: const Text("Expenses", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        title: Text(l10n.expenses, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading
@@ -114,7 +118,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text("Total Expenses", style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
+                        Text(l10n.totalExpenses, style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
                         const SizedBox(height: 6),
                         Text("Rs. ${_total.toStringAsFixed(0)}", style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
                       ],
@@ -122,11 +126,11 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                   ),
                   Expanded(
                     child: _expenses.isEmpty
-                        ? _buildEmptyState()
+                        ? _buildEmptyState(l10n)
                         : ListView.builder(
                             padding: const EdgeInsets.fromLTRB(16, 0, 16, 80),
                             itemCount: _expenses.length,
-                            itemBuilder: (context, index) => _buildExpenseCard(_expenses[index]),
+                            itemBuilder: (context, index) => _buildExpenseCard(_expenses[index], l10n),
                           ),
                   ),
                 ],
@@ -136,12 +140,12 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
         onPressed: () => _openForm(),
         backgroundColor: AppColors.primary,
         icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: const Text("Add Expense", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        label: Text(l10n.addExpense, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
       ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(AppLocalizations l10n) {
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
@@ -155,9 +159,9 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                 child: Icon(Icons.account_balance_wallet_outlined, size: 64, color: AppColors.iconMuted),
               ),
               const SizedBox(height: 24),
-              Text("No expenses recorded yet", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+              Text(l10n.noExpensesRecorded, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
               const SizedBox(height: 8),
-              Text("Tap \"Add Expense\" to record your first one", style: TextStyle(fontSize: 14, color: AppColors.textMedium)),
+              Text(l10n.tapToAddExpense, style: TextStyle(fontSize: 14, color: AppColors.textMedium)),
             ],
           ),
         ),
@@ -165,7 +169,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
     );
   }
 
-  Widget _buildExpenseCard(Expense expense) {
+  Widget _buildExpenseCard(Expense expense, AppLocalizations l10n) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -181,7 +185,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
           decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.08), shape: BoxShape.circle),
           child: const Icon(Icons.receipt_long_outlined, color: AppColors.primary),
         ),
-        title: Text(expense.category, style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark)),
+        title: Text(localizedExpenseCategory(l10n, expense.category), style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark)),
         subtitle: Text(
           expense.notes != null && expense.notes!.isNotEmpty
               ? "${expense.expenseDate.toString().split(' ')[0]} • ${expense.notes}"

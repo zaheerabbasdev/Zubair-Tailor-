@@ -110,6 +110,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
   }
 
   Future<void> _pickImage() async {
+    final l10n = AppLocalizations.of(context)!;
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -121,18 +122,18 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.photo_camera_outlined, color: AppColors.primary),
-              title: const Text("Take Photo"),
+              title: Text(l10n.takePhoto),
               onTap: () => Navigator.pop(context, ImageSource.camera),
             ),
             ListTile(
               leading: const Icon(Icons.photo_library_outlined, color: AppColors.primary),
-              title: const Text("Choose from Gallery"),
+              title: Text(l10n.chooseFromGallery),
               onTap: () => Navigator.pop(context, ImageSource.gallery),
             ),
             if (_imagePath != null)
               ListTile(
                 leading: const Icon(Icons.delete_outline_rounded, color: Colors.red),
-                title: const Text("Remove Photo", style: TextStyle(color: Colors.red)),
+                title: Text(l10n.removePhoto, style: const TextStyle(color: Colors.red)),
                 onTap: () => Navigator.pop(context),
               ),
           ],
@@ -174,7 +175,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
           ),
         ),
         title: Text(
-          _isEditing ? "Edit Order" : l10n.newOrder,
+          _isEditing ? l10n.editOrder : l10n.newOrder,
           style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
@@ -206,7 +207,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        "Details / تفصیلات",
+                        l10n.detailsSectionTitle,
                         style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                     ],
@@ -233,7 +234,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                       });
                       if (val != null) _fetchMeasurements(val.id!);
                     },
-                    validator: (v) => v == null ? 'Please select a customer' : null,
+                    validator: (v) => v == null ? l10n.pleaseSelectCustomer : null,
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<Measurement>(
@@ -248,7 +249,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                     ),
                     items: _measurements.map((m) => DropdownMenuItem(value: m, child: Text("ID: ${m.id} (${m.createdAt?.split('T')[0] ?? ''})"))).toList(),
                     onChanged: (val) => setState(() => _selectedMeasurement = val),
-                    validator: (v) => v == null ? 'Please select a measurement' : null,
+                    validator: (v) => v == null ? l10n.pleaseSelectMeasurement : null,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -261,7 +262,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
                       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
                     ),
-                    validator: (v) => v == null || v.isEmpty ? 'Please enter clothing type' : null,
+                    validator: (v) => v == null || v.isEmpty ? l10n.pleaseEnterClothingType : null,
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -280,7 +281,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                           ),
                           keyboardType: TextInputType.number,
                           onChanged: (_) => setState(() {}),
-                          validator: (v) => v == null || v.isEmpty ? 'Please enter price' : null,
+                          validator: (v) => v == null || v.isEmpty ? l10n.pleaseEnterPrice : null,
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -288,7 +289,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                         child: TextFormField(
                           controller: _amountPaidController,
                           decoration: InputDecoration(
-                            labelText: "Amount Paid",
+                            labelText: l10n.amountPaid,
                             prefixIcon: const Icon(Icons.account_balance_wallet_outlined, color: AppColors.primary),
                             filled: true,
                             fillColor: AppColors.background,
@@ -303,9 +304,9 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                   ),
                   if (overpaid) ...[
                     const SizedBox(height: 6),
-                    const Text(
-                      "Amount paid is more than the price — please double-check.",
-                      style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.w600),
+                    Text(
+                      l10n.overpaidWarning,
+                      style: const TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.w600),
                     ),
                   ],
                   const SizedBox(height: 16),
@@ -329,14 +330,14 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
                       ),
                       child: Text(
-                        _deliveryDate == null ? "Select Date" : _deliveryDate!.toString().split(' ')[0],
+                        _deliveryDate == null ? l10n.selectDate : _deliveryDate!.toString().split(' ')[0],
                         style: const TextStyle(fontWeight: FontWeight.w500),
                       ),
                     ),
                   ),
                   const SizedBox(height: 16),
                   ChoiceChip(
-                    label: const Text("Urgent", style: TextStyle(fontWeight: FontWeight.bold)),
+                    label: Text(l10n.urgent, style: const TextStyle(fontWeight: FontWeight.bold)),
                     avatar: Icon(Icons.priority_high_rounded, size: 18, color: _priority ? Colors.white : AppColors.primary),
                     selected: _priority,
                     onSelected: (v) => setState(() => _priority = v),
@@ -376,7 +377,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                               children: [
                                 const Icon(Icons.add_a_photo_outlined, color: AppColors.primary),
                                 const SizedBox(width: 12),
-                                Text("Add Reference Photo", style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textDark)),
+                                Text(l10n.addReferencePhoto, style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textDark)),
                               ],
                             )
                           : Row(
@@ -393,7 +394,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
-                                  child: Text("Tap to change photo", style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textDark)),
+                                  child: Text(l10n.tapToChangePhoto, style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textDark)),
                                 ),
                               ],
                             ),
@@ -466,7 +467,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
       if (mounted) {
         setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to save order')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.failedToSaveOrder)),
         );
       }
     }

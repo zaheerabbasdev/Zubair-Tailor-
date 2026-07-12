@@ -33,9 +33,9 @@ class AppDrawer extends StatelessWidget {
               l10n.appName,
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22, letterSpacing: 1, color: Colors.white),
             ),
-            accountEmail: const Text(
-              "Developed by Zubair Tech",
-              style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w500),
+            accountEmail: Text(
+              l10n.developedBy,
+              style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.w500),
             ),
             currentAccountPicture: Container(
               decoration: BoxDecoration(
@@ -60,7 +60,7 @@ class AppDrawer extends StatelessWidget {
               children: [
           _buildDrawerItem(
             icon: Icons.dashboard_rounded,
-            title: 'Dashboard',
+            title: l10n.dashboard,
             onTap: () => Navigator.pop(context),
           ),
           _buildDrawerItem(
@@ -81,7 +81,7 @@ class AppDrawer extends StatelessWidget {
           ),
           _buildDrawerItem(
             icon: Icons.local_shipping_outlined,
-            title: "Upcoming Deliveries",
+            title: l10n.upcomingDeliveries,
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (_) => const UpcomingDeliveriesScreen()));
@@ -89,7 +89,7 @@ class AppDrawer extends StatelessWidget {
           ),
           _buildDrawerItem(
             icon: Icons.bar_chart_rounded,
-            title: "Reports",
+            title: l10n.reports,
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsScreen()));
@@ -97,7 +97,7 @@ class AppDrawer extends StatelessWidget {
           ),
           _buildDrawerItem(
             icon: Icons.account_balance_wallet_outlined,
-            title: "Expenses",
+            title: l10n.expenses,
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (_) => const ExpenseListScreen()));
@@ -121,7 +121,7 @@ class AppDrawer extends StatelessWidget {
           ),
           _buildDrawerItem(
             icon: Icons.share_rounded,
-            title: "Share App",
+            title: l10n.shareApp,
             onTap: () {
               Navigator.pop(context);
               _shareApp();
@@ -129,7 +129,7 @@ class AppDrawer extends StatelessWidget {
           ),
           _buildDrawerItem(
             icon: Icons.apps_rounded,
-            title: "More Apps",
+            title: l10n.moreApps,
             onTap: () {
               Navigator.pop(context);
               _openMoreApps(context);
@@ -137,8 +137,8 @@ class AppDrawer extends StatelessWidget {
           ),
           _buildDrawerItem(
             icon: Icons.exit_to_app_rounded,
-            title: "Exit",
-            onTap: () => _confirmExit(context),
+            title: l10n.exit,
+            onTap: () => _confirmExit(context, l10n),
           ),
               ],
             ),
@@ -146,7 +146,7 @@ class AppDrawer extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 24),
             child: Text(
-              "Version 1.0.0 (Premium)",
+              l10n.versionLabel,
               style: TextStyle(color: AppColors.textMedium, fontSize: 12, fontWeight: FontWeight.bold),
             ),
           ),
@@ -163,26 +163,27 @@ class AppDrawer extends StatelessWidget {
   }
 
   Future<void> _openMoreApps(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final uri = Uri.parse('https://play.google.com/store/apps/dev?id=Zubair+Tech');
     final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!launched && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Couldn't open the Play Store")),
+        SnackBar(content: Text(l10n.couldntOpenPlayStore)),
       );
     }
   }
 
-  void _confirmExit(BuildContext context) {
+  void _confirmExit(BuildContext context, AppLocalizations l10n) {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text("Exit App", style: TextStyle(fontWeight: FontWeight.bold)),
-        content: const Text("Are you sure you want to exit?"),
+        title: Text(l10n.exitApp, style: const TextStyle(fontWeight: FontWeight.bold)),
+        content: Text(l10n.exitConfirm),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text("Cancel", style: TextStyle(color: AppColors.textMedium)),
+            child: Text(l10n.cancel, style: TextStyle(color: AppColors.textMedium)),
           ),
           ElevatedButton(
             onPressed: () => SystemNavigator.pop(),
@@ -191,7 +192,7 @@ class AppDrawer extends StatelessWidget {
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text("Exit"),
+            child: Text(l10n.exit),
           ),
         ],
       ),

@@ -256,7 +256,7 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                "No customers found / کوئی کسٹمر نہیں ملا",
+                l10n.noCustomersFound,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -265,7 +265,7 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                "Tap the + button to add a new customer",
+                l10n.tapToAddCustomer,
                 style: TextStyle(
                   fontSize: 14,
                   color: AppColors.textMedium,

@@ -9,6 +9,7 @@ import '../providers/theme_provider.dart';
 import '../repositories/customer_repository.dart';
 import '../repositories/order_repository.dart';
 import '../services/notification_service.dart';
+import '../utils/status_helper.dart';
 import '../widgets/app_drawer.dart';
 import 'customer_detail_screen.dart';
 import 'customer_list_screen.dart';
@@ -156,6 +157,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   List<Widget> _buildSearchResults() {
+    final l10n = AppLocalizations.of(context)!;
     final customers = _matchingCustomers;
     final orders = _matchingOrders;
 
@@ -165,7 +167,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           padding: const EdgeInsets.symmetric(vertical: 40),
           child: Center(
             child: Text(
-              "No results found",
+              l10n.noResultsFound,
               style: TextStyle(color: AppColors.textMedium, fontWeight: FontWeight.w500),
             ),
           ),
@@ -175,7 +177,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return [
       if (customers.isNotEmpty) ...[
-        Text("Customers", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+        Text(l10n.customersLabel, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
         const SizedBox(height: 12),
         ...customers.map((c) => Container(
               margin: const EdgeInsets.only(bottom: 12),
@@ -200,7 +202,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         const SizedBox(height: 12),
       ],
       if (orders.isNotEmpty) ...[
-        Text("Orders", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+        Text(l10n.ordersLabel, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
         const SizedBox(height: 12),
         ...orders.map((o) {
           final statusColor = AppColors.statusColor(o.status);
@@ -218,9 +220,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.08), borderRadius: BorderRadius.circular(12)),
                 child: const Icon(Icons.shopping_bag_outlined, color: AppColors.primary),
               ),
-              title: Text(o.customerName ?? "Unknown", style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark)),
+              title: Text(o.customerName ?? l10n.unknown, style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark)),
               subtitle: Text(o.clothingType, style: TextStyle(color: AppColors.textMedium)),
-              trailing: Text(o.status, style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 12)),
+              trailing: Text(localizedStatus(l10n, o.status), style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 12)),
               onTap: () {
                 final customer = _customerFor(o);
                 if (customer != null) {
@@ -283,7 +285,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       const SizedBox(height: 32),
 
       Text(
-        "Navigation",
+        l10n.navigation,
         style: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
@@ -311,7 +313,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       const SizedBox(height: 12),
       _buildNavigationItem(
         context,
-        "Upcoming Deliveries",
+        l10n.upcomingDeliveries,
         Icons.local_shipping_outlined,
         AppColors.statusInProgress,
         () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UpcomingDeliveriesScreen())),
@@ -319,7 +321,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       const SizedBox(height: 12),
       _buildNavigationItem(
         context,
-        "Reports",
+        l10n.reports,
         Icons.bar_chart_rounded,
         AppColors.secondary,
         () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsScreen())),
@@ -327,7 +329,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       const SizedBox(height: 12),
       _buildNavigationItem(
         context,
-        "Expenses",
+        l10n.expenses,
         Icons.account_balance_wallet_outlined,
         Colors.deepPurple,
         () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ExpenseListScreen())),

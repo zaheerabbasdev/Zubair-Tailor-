@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/app_lock_provider.dart';
 import '../utils/app_colors.dart';
 import 'dashboard_screen.dart';
@@ -18,9 +19,9 @@ class _AppLockScreenState extends State<AppLockScreen> {
   String? _error;
   bool _isConfirmStep = false;
 
-  String get _title {
-    if (!widget.isSetup) return "Enter PIN";
-    return _isConfirmStep ? "Confirm PIN" : "Set a PIN";
+  String _title(AppLocalizations l10n) {
+    if (!widget.isSetup) return l10n.enterPin;
+    return _isConfirmStep ? l10n.confirmPin : l10n.setPin;
   }
 
   void _onDigit(String digit) {
@@ -54,8 +55,9 @@ class _AppLockScreenState extends State<AppLockScreen> {
         await context.read<AppLockProvider>().setPin(_pin);
         if (mounted) Navigator.pop(context, true);
       } else {
+        final l10n = AppLocalizations.of(context)!;
         setState(() {
-          _error = "PINs didn't match — try again";
+          _error = l10n.pinMismatch;
           _pin = '';
           _firstPin = null;
           _isConfirmStep = false;
@@ -71,8 +73,10 @@ class _AppLockScreenState extends State<AppLockScreen> {
           );
         }
       } else {
+        if (!mounted) return;
+        final l10n = AppLocalizations.of(context)!;
         setState(() {
-          _error = "Incorrect PIN";
+          _error = l10n.incorrectPin;
           _pin = '';
         });
       }
@@ -81,6 +85,7 @@ class _AppLockScreenState extends State<AppLockScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return PopScope(
       canPop: widget.isSetup,
       child: Scaffold(
@@ -92,7 +97,7 @@ class _AppLockScreenState extends State<AppLockScreen> {
               children: [
                 const Icon(Icons.lock_rounded, color: Colors.white, size: 48),
                 const SizedBox(height: 16),
-                Text(_title, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                Text(_title(l10n), style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

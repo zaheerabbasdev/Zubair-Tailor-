@@ -70,14 +70,15 @@ class _AddCustomerSheetState extends State<AddCustomerSheet> {
       if (mounted) {
         context.read<BackupProvider>().syncInBackground();
         Navigator.pop(context, saved);
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_isEditing ? 'Customer updated successfully!' : 'Customer added successfully!')),
+          SnackBar(content: Text(_isEditing ? l10n.customerUpdatedSuccess : l10n.customerAddedSuccess)),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save customer: $e')),
+          SnackBar(content: Text('${AppLocalizations.of(context)!.failedToSaveCustomer}: $e')),
         );
       }
     } finally {
@@ -111,7 +112,7 @@ class _AddCustomerSheetState extends State<AddCustomerSheet> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      _isEditing ? "Edit Customer" : l10n.addCustomer,
+                      _isEditing ? l10n.editCustomer : l10n.addCustomer,
                       style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primary),
                     ),
                     IconButton(
@@ -135,7 +136,7 @@ class _AddCustomerSheetState extends State<AddCustomerSheet> {
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
                     enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
                   ),
-                  validator: (value) => value == null || value.isEmpty ? 'Please enter a name' : null,
+                  validator: (value) => value == null || value.isEmpty ? l10n.pleaseEnterName : null,
                   textCapitalization: TextCapitalization.words,
                 ),
                 const SizedBox(height: 16),
@@ -149,7 +150,7 @@ class _AddCustomerSheetState extends State<AddCustomerSheet> {
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
                     enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
                   ),
-                  validator: (value) => value == null || value.isEmpty ? 'Please enter a phone number' : null,
+                  validator: (value) => value == null || value.isEmpty ? l10n.pleaseEnterPhone : null,
                   keyboardType: TextInputType.phone,
                 ),
                 const SizedBox(height: 16),

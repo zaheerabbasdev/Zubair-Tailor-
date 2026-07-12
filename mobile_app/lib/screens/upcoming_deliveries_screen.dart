@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../models/order.dart';
 import '../providers/theme_provider.dart';
 import '../repositories/order_repository.dart';
 import 'order_form_screen.dart';
 import '../utils/app_colors.dart';
+import '../utils/status_helper.dart';
 
 class UpcomingDeliveriesScreen extends StatefulWidget {
   const UpcomingDeliveriesScreen({super.key});
@@ -47,13 +49,14 @@ class _UpcomingDeliveriesScreenState extends State<UpcomingDeliveriesScreen> {
   @override
   Widget build(BuildContext context) {
     AppColors.dark = context.watch<ThemeProvider>().isDark;
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         flexibleSpace: Container(
           decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
         ),
-        title: const Text("Upcoming Deliveries", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        title: Text(l10n.upcomingDeliveries, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading
@@ -61,17 +64,17 @@ class _UpcomingDeliveriesScreenState extends State<UpcomingDeliveriesScreen> {
           : RefreshIndicator(
               onRefresh: _fetchOrders,
               child: _orders.isEmpty
-                  ? _buildEmptyState()
+                  ? _buildEmptyState(l10n)
                   : ListView.builder(
                       padding: const EdgeInsets.all(16),
                       itemCount: _orders.length,
-                      itemBuilder: (context, index) => _buildOrderCard(_orders[index]),
+                      itemBuilder: (context, index) => _buildOrderCard(_orders[index], l10n),
                     ),
             ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(AppLocalizations l10n) {
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
@@ -86,12 +89,12 @@ class _UpcomingDeliveriesScreenState extends State<UpcomingDeliveriesScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                "No upcoming deliveries",
+                l10n.noUpcomingDeliveries,
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
               ),
               const SizedBox(height: 8),
               Text(
-                "Orders with a delivery date will show up here",
+                l10n.deliveryDateWillShow,
                 style: TextStyle(fontSize: 14, color: AppColors.textMedium),
               ),
             ],
@@ -101,7 +104,7 @@ class _UpcomingDeliveriesScreenState extends State<UpcomingDeliveriesScreen> {
     );
   }
 
-  Widget _buildOrderCard(Order o) {
+  Widget _buildOrderCard(Order o, AppLocalizations l10n) {
     final overdue = o.deliveryDate!.isBefore(DateTime.now());
     final accentColor = overdue ? Colors.red.shade600 : AppColors.statusColor(o.status);
 
@@ -152,7 +155,7 @@ class _UpcomingDeliveriesScreenState extends State<UpcomingDeliveriesScreen> {
                           ],
                           Expanded(
                             child: Text(
-                              o.customerName ?? "Unknown",
+                              o.customerName ?? l10n.unknown,
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
                               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textDark),
@@ -170,8 +173,8 @@ class _UpcomingDeliveriesScreenState extends State<UpcomingDeliveriesScreen> {
                       const SizedBox(height: 6),
                       Text(
                         overdue
-                            ? "Overdue — was due ${o.deliveryDate!.toString().split(' ')[0]}"
-                            : "Due ${o.deliveryDate!.toString().split(' ')[0]}",
+                            ? l10n.overdueSince(o.deliveryDate!.toString().split(' ')[0])
+                            : l10n.dueOn(o.deliveryDate!.toString().split(' ')[0]),
                         style: TextStyle(color: accentColor, fontSize: 12, fontWeight: FontWeight.bold),
                       ),
                     ],
@@ -184,7 +187,7 @@ class _UpcomingDeliveriesScreenState extends State<UpcomingDeliveriesScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    o.status,
+                    localizedStatus(l10n, o.status),
                     style: TextStyle(color: AppColors.statusColor(o.status), fontSize: 11, fontWeight: FontWeight.bold),
                   ),
                 ),

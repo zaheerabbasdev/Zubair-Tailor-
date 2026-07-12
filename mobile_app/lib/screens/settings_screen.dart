@@ -64,33 +64,33 @@ class SettingsScreen extends StatelessWidget {
           ),
 
           const SizedBox(height: 32),
-          _buildSectionHeader(context, "Appearance", Icons.dark_mode_outlined),
+          _buildSectionHeader(context, l10n.appearance, Icons.dark_mode_outlined),
           const SizedBox(height: 12),
           Consumer<ThemeProvider>(
-            builder: (context, theme, _) => _buildAppearanceCard(context, theme),
+            builder: (context, theme, _) => _buildAppearanceCard(context, theme, l10n),
           ),
 
           const SizedBox(height: 32),
-          _buildSectionHeader(context, "App Lock", Icons.lock_outline_rounded),
+          _buildSectionHeader(context, l10n.appLock, Icons.lock_outline_rounded),
           const SizedBox(height: 12),
           Consumer<AppLockProvider>(
-            builder: (context, lock, _) => _buildAppLockCard(context, lock),
+            builder: (context, lock, _) => _buildAppLockCard(context, lock, l10n),
           ),
 
           const SizedBox(height: 32),
-          _buildSectionHeader(context, "Backup & Restore", Icons.cloud_outlined),
+          _buildSectionHeader(context, l10n.backupRestore, Icons.cloud_outlined),
           const SizedBox(height: 12),
           Consumer<BackupProvider>(
-            builder: (context, backup, _) => _buildBackupCard(context, backup),
+            builder: (context, backup, _) => _buildBackupCard(context, backup, l10n),
           ),
 
           const SizedBox(height: 32),
-          _buildSectionHeader(context, "Export Data", Icons.file_download_outlined),
+          _buildSectionHeader(context, l10n.exportData, Icons.file_download_outlined),
           const SizedBox(height: 12),
-          _buildExportCard(context),
+          _buildExportCard(context, l10n),
 
           const SizedBox(height: 32),
-          _buildSectionHeader(context, "System Info", Icons.info_outline_rounded),
+          _buildSectionHeader(context, l10n.systemInfo, Icons.info_outline_rounded),
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(20),
@@ -102,17 +102,17 @@ class SettingsScreen extends StatelessWidget {
             ),
             child: Column(
               children: [
-                _buildInfoRow("App Version", "1.0.0 (Premium)"),
+                _buildInfoRow(l10n.appVersion, "1.0.0 (Premium)"),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   child: Divider(color: AppColors.divider, height: 1),
                 ),
-                _buildInfoRow("Publisher", "Zubair Tech"),
+                _buildInfoRow(l10n.publisher, "Zubair Tech"),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   child: Divider(color: AppColors.divider, height: 1),
                 ),
-                _buildInfoRow("Database Status", "Local Sync Online"),
+                _buildInfoRow(l10n.databaseStatus, l10n.localSyncOnline),
               ],
             ),
           )
@@ -121,7 +121,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAppearanceCard(BuildContext context, ThemeProvider theme) {
+  Widget _buildAppearanceCard(BuildContext context, ThemeProvider theme, AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       decoration: BoxDecoration(
@@ -133,11 +133,11 @@ class SettingsScreen extends StatelessWidget {
       child: SwitchListTile(
         contentPadding: EdgeInsets.zero,
         title: Text(
-          "Dark Mode",
+          l10n.darkMode,
           style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark, fontSize: 15),
         ),
         subtitle: Text(
-          "Switch the app to a dark color scheme",
+          l10n.darkModeSubtitle,
           style: TextStyle(color: AppColors.textMedium, fontSize: 12),
         ),
         value: theme.isDark,
@@ -147,7 +147,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildExportCard(BuildContext context) {
+  Widget _buildExportCard(BuildContext context, AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -160,20 +160,20 @@ class SettingsScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            "Export your customers and orders as CSV files you can open in Excel or share elsewhere.",
+            l10n.exportDescription,
             style: TextStyle(color: AppColors.textMedium, fontSize: 13, height: 1.4),
           ),
           const SizedBox(height: 16),
           OutlinedButton.icon(
             onPressed: () => _exportOrders(context),
             icon: const Icon(Icons.receipt_long_outlined, size: 18),
-            label: const Text("Export Orders (CSV)"),
+            label: Text(l10n.exportOrdersCsv),
           ),
           const SizedBox(height: 12),
           OutlinedButton.icon(
             onPressed: () => _exportCustomers(context),
             icon: const Icon(Icons.people_outline_rounded, size: 18),
-            label: const Text("Export Customers (CSV)"),
+            label: Text(l10n.exportCustomersCsv),
           ),
         ],
       ),
@@ -186,13 +186,13 @@ class SettingsScreen extends StatelessWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Export failed: $e")),
+          SnackBar(content: Text("${AppLocalizations.of(context)!.exportFailed}: $e")),
         );
       }
     }
   }
 
-  Widget _buildAppLockCard(BuildContext context, AppLockProvider lock) {
+  Widget _buildAppLockCard(BuildContext context, AppLockProvider lock, AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       decoration: BoxDecoration(
@@ -204,11 +204,11 @@ class SettingsScreen extends StatelessWidget {
       child: SwitchListTile(
         contentPadding: EdgeInsets.zero,
         title: Text(
-          "PIN Lock",
+          l10n.pinLock,
           style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark, fontSize: 15),
         ),
         subtitle: Text(
-          "Require a 4-digit PIN to open the app",
+          l10n.pinLockSubtitle,
           style: TextStyle(color: AppColors.textMedium, fontSize: 12),
         ),
         value: lock.isEnabled,
@@ -226,11 +226,12 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Future<void> _disableLock(BuildContext context, AppLockProvider lock) async {
+    final l10n = AppLocalizations.of(context)!;
     final pinController = TextEditingController();
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text("Enter current PIN", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(l10n.enterCurrentPin, style: const TextStyle(fontWeight: FontWeight.bold)),
         content: TextField(
           controller: pinController,
           obscureText: true,
@@ -242,14 +243,14 @@ class SettingsScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text("Cancel", style: TextStyle(color: AppColors.textMedium)),
+            child: Text(l10n.cancel, style: TextStyle(color: AppColors.textMedium)),
           ),
           ElevatedButton(
             onPressed: () async {
               final correct = await lock.verifyPin(pinController.text);
               if (dialogContext.mounted) Navigator.pop(dialogContext, correct);
             },
-            child: const Text("Confirm"),
+            child: Text(l10n.confirm),
           ),
         ],
       ),
@@ -259,7 +260,7 @@ class SettingsScreen extends StatelessWidget {
       await lock.disable();
     } else if (confirmed == false && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Incorrect PIN")),
+        SnackBar(content: Text(l10n.incorrectPin)),
       );
     }
   }
@@ -270,7 +271,7 @@ class SettingsScreen extends StatelessWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Export failed: $e")),
+          SnackBar(content: Text("${AppLocalizations.of(context)!.exportFailed}: $e")),
         );
       }
     }
@@ -358,7 +359,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBackupCard(BuildContext context, BackupProvider backup) {
+  Widget _buildBackupCard(BuildContext context, BackupProvider backup, AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -372,22 +373,22 @@ class SettingsScreen extends StatelessWidget {
         children: [
           if (!backup.isSignedIn) ...[
             Text(
-              "Connect your Google account to automatically back up your customers, measurements, and orders to Google Drive.",
+              l10n.connectGoogleDescription,
               style: TextStyle(color: AppColors.textMedium, fontSize: 13, height: 1.4),
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: backup.isBusy ? null : () => backup.signIn(),
               icon: const Icon(Icons.login_rounded, size: 18),
-              label: Text(backup.isBusy ? "Connecting..." : "Connect Google Account"),
+              label: Text(backup.isBusy ? l10n.connecting : l10n.connectGoogleAccount),
             ),
           ] else ...[
-            _buildInfoRow("Account", backup.accountEmail ?? "-"),
+            _buildInfoRow(l10n.account, backup.accountEmail ?? "-"),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 10),
               child: Divider(color: AppColors.divider, height: 1),
             ),
-            _buildInfoRow("Last Backup", _formatLastBackup(backup.lastBackupAt)),
+            _buildInfoRow(l10n.lastBackup, _formatLastBackup(backup.lastBackupAt, l10n)),
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: backup.isBusy ? null : () => _backupNow(context, backup),
@@ -398,7 +399,7 @@ class SettingsScreen extends StatelessWidget {
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                     )
                   : const Icon(Icons.backup_rounded, size: 18),
-              label: Text(backup.isBusy ? "Working..." : "Back Up Now"),
+              label: Text(backup.isBusy ? l10n.working : l10n.backUpNow),
             ),
             const SizedBox(height: 12),
             Row(
@@ -407,13 +408,13 @@ class SettingsScreen extends StatelessWidget {
                   child: OutlinedButton.icon(
                     onPressed: backup.isBusy ? null : () => _showRestoreSheet(context, backup),
                     icon: const Icon(Icons.restore_rounded, size: 18),
-                    label: const Text("Restore Backup"),
+                    label: Text(l10n.restoreBackup),
                   ),
                 ),
                 const SizedBox(width: 12),
                 TextButton(
                   onPressed: backup.isBusy ? null : () => backup.signOut(),
-                  child: const Text("Disconnect"),
+                  child: Text(l10n.disconnect),
                 ),
               ],
             ),
@@ -430,10 +431,10 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  String _formatLastBackup(DateTime? time) {
-    if (time == null) return "Never";
+  String _formatLastBackup(DateTime? time, AppLocalizations l10n) {
+    if (time == null) return l10n.never;
     final diff = DateTime.now().difference(time);
-    if (diff.inMinutes < 1) return "Just now";
+    if (diff.inMinutes < 1) return l10n.justNow;
     if (diff.inMinutes < 60) return "${diff.inMinutes}m ago";
     if (diff.inHours < 24) return "${diff.inHours}h ago";
     return "${diff.inDays}d ago";
@@ -446,27 +447,29 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Future<void> _backupNow(BuildContext context, BackupProvider backup) async {
+    final l10n = AppLocalizations.of(context)!;
     await backup.backupNow();
     if (!context.mounted) return;
     if (backup.errorMessage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Backup completed successfully")),
+        SnackBar(content: Text(l10n.backupCompletedSuccess)),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Backup failed: ${backup.errorMessage}")),
+        SnackBar(content: Text("${l10n.backupFailed}: ${backup.errorMessage}")),
       );
     }
   }
 
   Future<void> _showRestoreSheet(BuildContext context, BackupProvider backup) async {
+    final l10n = AppLocalizations.of(context)!;
     List<drive.File> backups;
     try {
       backups = await backup.listBackups();
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to load backups: $e")),
+          SnackBar(content: Text("${l10n.failedToLoadBackups}: $e")),
         );
       }
       return;
@@ -476,7 +479,7 @@ class SettingsScreen extends StatelessWidget {
 
     if (backups.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("No backups found yet")),
+        SnackBar(content: Text(l10n.noBackupsFound)),
       );
       return;
     }
@@ -494,7 +497,7 @@ class SettingsScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Restore Backup",
+                l10n.restoreBackup,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark),
               ),
               const SizedBox(height: 16),
@@ -527,21 +530,21 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Future<void> _confirmRestore(BuildContext context, BackupProvider backup, drive.File file) async {
+    final l10n = AppLocalizations.of(context)!;
     final created = file.createdTime;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text("Restore this backup?"),
+        title: Text(l10n.restoreBackupQuestion),
         content: Text(
-          "This will overwrite all local data with the backup from "
-          "${created != null ? _formatFullDate(created) : 'this backup'}. This cannot be undone.",
+          l10n.restoreWarning(created != null ? _formatFullDate(created) : 'this backup'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text("Cancel")),
+          TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: Text(l10n.cancel)),
           ElevatedButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text("Restore"),
+            child: Text(l10n.restore),
           ),
         ],
       ),
@@ -555,7 +558,7 @@ class SettingsScreen extends StatelessWidget {
 
     if (backup.errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Restore failed: ${backup.errorMessage}")),
+        SnackBar(content: Text("${l10n.restoreFailed}: ${backup.errorMessage}")),
       );
       return;
     }
