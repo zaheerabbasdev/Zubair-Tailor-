@@ -7,6 +7,7 @@ import '../models/order.dart';
 import '../providers/backup_provider.dart';
 import '../providers/theme_provider.dart';
 import '../repositories/order_repository.dart';
+import '../providers/shop_profile_provider.dart';
 import '../services/invoice_service.dart';
 import '../services/notification_service.dart';
 import 'order_form_screen.dart';
@@ -287,6 +288,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                                       customerName: order.customerName ?? 'Customer',
                                                       clothingType: order.clothingType,
                                                       status: order.status,
+                                                      shopName: context.read<ShopProfileProvider>().shopName,
                                                     ),
                                                   ),
                                                 ),
@@ -296,7 +298,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                                   l10n.invoice,
                                                   style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 13),
                                                 ),
-                                                onPressed: () => InvoiceService.generateAndShareInvoice(order),
+                                                onPressed: () => InvoiceService.generateAndShareInvoice(context, order),
                                               ),
                                               TextButton.icon(
                                                 icon: const Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),

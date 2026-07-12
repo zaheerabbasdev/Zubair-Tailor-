@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_localizations.dart';
+import '../providers/shop_profile_provider.dart';
 import '../providers/theme_provider.dart';
 import '../utils/app_colors.dart';
 import '../screens/customer_list_screen.dart';
@@ -20,6 +21,7 @@ class AppDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     AppColors.dark = context.watch<ThemeProvider>().isDark;
     final l10n = AppLocalizations.of(context)!;
+    final shopName = context.watch<ShopProfileProvider>().shopName;
 
     return Drawer(
       backgroundColor: AppColors.background,
@@ -30,7 +32,7 @@ class AppDrawer extends StatelessWidget {
               gradient: AppColors.primaryGradient,
             ),
             accountName: Text(
-              l10n.appName,
+              shopName,
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22, letterSpacing: 1, color: Colors.white),
             ),
             accountEmail: Text(
@@ -164,7 +166,7 @@ class AppDrawer extends StatelessWidget {
 
   Future<void> _openMoreApps(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
-    final uri = Uri.parse('https://play.google.com/store/apps/dev?id=Zubair+Tech');
+    final uri = Uri.parse('https://play.google.com/store/apps/dev?id=Zaheer+Tech');
     final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!launched && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

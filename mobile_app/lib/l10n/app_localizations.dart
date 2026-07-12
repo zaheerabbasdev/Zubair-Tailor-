@@ -1259,7 +1259,7 @@ abstract class AppLocalizations {
   /// No description provided for @developedBy.
   ///
   /// In en, this message translates to:
-  /// **'Developed by Zubair Tech'**
+  /// **'Developed by Zaheer Tech'**
   String get developedBy;
 
   /// No description provided for @versionLabel.
@@ -1291,6 +1291,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'PINs didn\'t match — try again'**
   String get pinMismatch;
+
+  /// No description provided for @shopProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop Profile'**
+  String get shopProfile;
+
+  /// No description provided for @shopProfileDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Your shop\'s name, phone, and address appear on invoices and customer WhatsApp messages.'**
+  String get shopProfileDescription;
+
+  /// No description provided for @shopName.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop Name'**
+  String get shopName;
+
+  /// No description provided for @pleaseEnterShopName.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a shop name'**
+  String get pleaseEnterShopName;
+
+  /// No description provided for @profileSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop profile saved'**
+  String get profileSaved;
 }
 
 class _AppLocalizationsDelegate

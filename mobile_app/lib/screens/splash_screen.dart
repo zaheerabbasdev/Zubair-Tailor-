@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_lock_provider.dart';
+import '../providers/shop_profile_provider.dart';
 import '../utils/app_colors.dart';
 import 'app_lock_screen.dart';
 import 'dashboard_screen.dart';
@@ -74,6 +75,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final shopName = context.watch<ShopProfileProvider>().shopName.toUpperCase();
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(gradient: AppColors.heroGradient),
@@ -138,27 +140,21 @@ class _SplashScreenState extends State<SplashScreen>
                     position: _textSlide,
                     child: FadeTransition(
                       opacity: _textFade,
-                      child: Column(
-                        children: [
-                          const Text(
-                            'ZUBAIR',
-                            style: TextStyle(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            shopName,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 44,
+                              fontSize: 36,
                               fontWeight: FontWeight.w900,
-                              letterSpacing: 10,
+                              letterSpacing: 4,
                             ),
                           ),
-                          Text(
-                            'TAILORS',
-                            style: TextStyle(
-                              color: AppColors.accent,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 12,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ),

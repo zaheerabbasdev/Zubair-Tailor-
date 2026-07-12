@@ -1,10 +1,18 @@
+import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:provider/provider.dart';
 import '../models/order.dart';
+import '../providers/shop_profile_provider.dart';
 
 class InvoiceService {
-  static Future<void> generateAndShareInvoice(Order order) async {
+  static Future<void> generateAndShareInvoice(BuildContext context, Order order) async {
+    final shopProfile = context.read<ShopProfileProvider>();
+    final shopName = shopProfile.shopName;
+    final shopPhone = shopProfile.shopPhone;
+    final shopAddress = shopProfile.shopAddress;
+
     final doc = pw.Document();
     final due = order.price - order.amountPaid;
 
@@ -14,7 +22,9 @@ class InvoiceService {
         build: (context) => pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Text('Zubair Tailors', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+            pw.Text(shopName, style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+            if (shopPhone != null && shopPhone.isNotEmpty) pw.Text(shopPhone, style: const pw.TextStyle(fontSize: 10)),
+            if (shopAddress != null && shopAddress.isNotEmpty) pw.Text(shopAddress, style: const pw.TextStyle(fontSize: 10)),
             pw.SizedBox(height: 4),
             pw.Text('Invoice #${order.id ?? ''}'),
             pw.Text('Date: ${DateTime.now().toString().split(' ')[0]}'),

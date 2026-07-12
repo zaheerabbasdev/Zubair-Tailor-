@@ -23,8 +23,13 @@ Future<void> sendWhatsAppMessage(BuildContext context, {required String phone, r
   }
 }
 
-String buildOrderStatusMessage({required String customerName, required String clothingType, required String status}) {
-  var message = "Hi $customerName, your order for $clothingType at Zubair Tailors is now $status.";
+String buildOrderStatusMessage({
+  required String customerName,
+  required String clothingType,
+  required String status,
+  required String shopName,
+}) {
+  var message = "Hi $customerName, your order for $clothingType at $shopName is now $status.";
   if (status == 'Ready' || status == 'Delivered') {
     message += " Please visit to collect it.";
   }

@@ -605,7 +605,7 @@ class AppLocalizationsUr extends AppLocalizations {
   String get couldntOpenPlayStore => 'پلے اسٹور نہیں کھل سکا';
 
   @override
-  String get developedBy => 'زبیر ٹیک کی جانب سے تیار کردہ';
+  String get developedBy => 'ظہیر ٹیک کی جانب سے تیار کردہ';
 
   @override
   String get versionLabel => 'ورژن 1.0.0 (پریمیم)';
@@ -621,4 +621,20 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get pinMismatch => 'پن مماثل نہیں — دوبارہ کوشش کریں';
+
+  @override
+  String get shopProfile => 'دکان کی پروفائل';
+
+  @override
+  String get shopProfileDescription =>
+      'آپ کی دکان کا نام، فون، اور پتہ انوائسز اور گاہکوں کے واٹس ایپ پیغامات پر ظاہر ہوگا۔';
+
+  @override
+  String get shopName => 'دکان کا نام';
+
+  @override
+  String get pleaseEnterShopName => 'براہ کرم دکان کا نام درج کریں';
+
+  @override
+  String get profileSaved => 'دکان کی پروفائل محفوظ ہو گئی';
 }

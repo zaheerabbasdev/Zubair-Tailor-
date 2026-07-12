@@ -5,6 +5,7 @@ import '../l10n/app_localizations.dart';
 import '../providers/app_lock_provider.dart';
 import '../providers/backup_provider.dart';
 import '../providers/locale_provider.dart';
+import '../providers/shop_profile_provider.dart';
 import '../providers/theme_provider.dart';
 import '../services/export_service.dart';
 import '../utils/app_colors.dart';
@@ -35,6 +36,11 @@ class SettingsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          _buildSectionHeader(context, l10n.shopProfile, Icons.storefront_outlined),
+          const SizedBox(height: 12),
+          const _ShopProfileCard(),
+
+          const SizedBox(height: 32),
           _buildSectionHeader(context, l10n.language, Icons.language_rounded),
           const SizedBox(height: 12),
 
@@ -107,7 +113,7 @@ class SettingsScreen extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   child: Divider(color: AppColors.divider, height: 1),
                 ),
-                _buildInfoRow(l10n.publisher, "Zubair Tech"),
+                _buildInfoRow(l10n.publisher, "Zaheer Tech"),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   child: Divider(color: AppColors.divider, height: 1),
@@ -566,6 +572,134 @@ class SettingsScreen extends StatelessWidget {
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const DashboardScreen()),
       (route) => false,
+    );
+  }
+}
+
+class _ShopProfileCard extends StatefulWidget {
+  const _ShopProfileCard();
+
+  @override
+  State<_ShopProfileCard> createState() => _ShopProfileCardState();
+}
+
+class _ShopProfileCardState extends State<_ShopProfileCard> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _nameController;
+  late final TextEditingController _phoneController;
+  late final TextEditingController _addressController;
+  bool _initialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController();
+    _phoneController = TextEditingController();
+    _addressController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _phoneController.dispose();
+    _addressController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save(BuildContext context, ShopProfileProvider profile, AppLocalizations l10n) async {
+    if (!_formKey.currentState!.validate()) return;
+    await profile.updateProfile(
+      shopName: _nameController.text.trim(),
+      shopPhone: _phoneController.text.trim(),
+      shopAddress: _addressController.text.trim(),
+    );
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.profileSaved)),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Consumer<ShopProfileProvider>(
+      builder: (context, profile, _) {
+        if (!_initialized) {
+          _nameController.text = profile.shopName;
+          _phoneController.text = profile.shopPhone ?? '';
+          _addressController.text = profile.shopAddress ?? '';
+          _initialized = true;
+        }
+
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceCard,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: AppColors.cardShadow,
+            border: Border.all(color: AppColors.divider, width: 1),
+          ),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  l10n.shopProfileDescription,
+                  style: TextStyle(color: AppColors.textMedium, fontSize: 13, height: 1.4),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    labelText: l10n.shopName,
+                    prefixIcon: const Icon(Icons.storefront_outlined, color: AppColors.primary),
+                    filled: true,
+                    fillColor: AppColors.background,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                  ),
+                  validator: (v) => v == null || v.trim().isEmpty ? l10n.pleaseEnterShopName : null,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _phoneController,
+                  decoration: InputDecoration(
+                    labelText: l10n.phone,
+                    prefixIcon: const Icon(Icons.phone_iphone_rounded, color: AppColors.primary),
+                    filled: true,
+                    fillColor: AppColors.background,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                  ),
+                  keyboardType: TextInputType.phone,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _addressController,
+                  decoration: InputDecoration(
+                    labelText: l10n.address,
+                    prefixIcon: const Icon(Icons.location_on_outlined, color: AppColors.primary),
+                    filled: true,
+                    fillColor: AppColors.background,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                  ),
+                  maxLines: 2,
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: () => _save(context, profile, l10n),
+                  icon: const Icon(Icons.save_outlined, size: 18),
+                  label: Text(l10n.save),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

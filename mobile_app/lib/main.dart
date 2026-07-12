@@ -8,6 +8,7 @@ import 'l10n/app_localizations.dart';
 import 'providers/app_lock_provider.dart';
 import 'providers/backup_provider.dart';
 import 'providers/locale_provider.dart';
+import 'providers/shop_profile_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/splash_screen.dart';
 import 'services/notification_service.dart';
@@ -34,6 +35,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => BackupProvider()..init()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(lazy: false, create: (_) => AppLockProvider()),
+        ChangeNotifierProvider(lazy: false, create: (_) => ShopProfileProvider()),
       ],
       child: const MyApp(),
     ),

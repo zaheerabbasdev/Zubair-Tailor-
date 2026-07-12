@@ -7,6 +7,7 @@ import '../models/customer.dart';
 import '../models/measurement.dart';
 import '../models/order.dart';
 import '../providers/backup_provider.dart';
+import '../providers/shop_profile_provider.dart';
 import '../providers/theme_provider.dart';
 import '../repositories/customer_repository.dart';
 import '../repositories/measurement_repository.dart';
@@ -517,6 +518,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                       customerName: _customer.name,
                       clothingType: o.clothingType,
                       status: o.status,
+                      shopName: context.read<ShopProfileProvider>().shopName,
                     ),
                   ),
                 ),
@@ -524,7 +526,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                   style: _compactActionButtonStyle,
                   icon: const Icon(Icons.receipt_rounded, size: 16, color: AppColors.primary),
                   label: Text(l10n.invoice, style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12)),
-                  onPressed: () => InvoiceService.generateAndShareInvoice(o),
+                  onPressed: () => InvoiceService.generateAndShareInvoice(context, o),
                 ),
                 TextButton.icon(
                   style: _compactActionButtonStyle,

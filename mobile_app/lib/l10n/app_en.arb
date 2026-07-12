@@ -219,11 +219,17 @@
   "exitApp": "Exit App",
   "exitConfirm": "Are you sure you want to exit?",
   "couldntOpenPlayStore": "Couldn't open the Play Store",
-  "developedBy": "Developed by Zubair Tech",
+  "developedBy": "Developed by Zaheer Tech",
   "versionLabel": "Version 1.0.0 (Premium)",
 
   "enterPin": "Enter PIN",
   "confirmPin": "Confirm PIN",
   "setPin": "Set a PIN",
-  "pinMismatch": "PINs didn't match — try again"
+  "pinMismatch": "PINs didn't match — try again",
+
+  "shopProfile": "Shop Profile",
+  "shopProfileDescription": "Your shop's name, phone, and address appear on invoices and customer WhatsApp messages.",
+  "shopName": "Shop Name",
+  "pleaseEnterShopName": "Please enter a shop name",
+  "profileSaved": "Shop profile saved"
 }

@@ -603,7 +603,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get couldntOpenPlayStore => 'Couldn\'t open the Play Store';
 
   @override
-  String get developedBy => 'Developed by Zubair Tech';
+  String get developedBy => 'Developed by Zaheer Tech';
 
   @override
   String get versionLabel => 'Version 1.0.0 (Premium)';
@@ -619,4 +619,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pinMismatch => 'PINs didn\'t match — try again';
+
+  @override
+  String get shopProfile => 'Shop Profile';
+
+  @override
+  String get shopProfileDescription =>
+      'Your shop\'s name, phone, and address appear on invoices and customer WhatsApp messages.';
+
+  @override
+  String get shopName => 'Shop Name';
+
+  @override
+  String get pleaseEnterShopName => 'Please enter a shop name';
+
+  @override
+  String get profileSaved => 'Shop profile saved';
 }
