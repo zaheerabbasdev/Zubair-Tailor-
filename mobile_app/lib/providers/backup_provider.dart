@@ -3,14 +3,18 @@ import 'package:googleapis/drive/v3.dart' as drive;
 
 import '../services/backup_service.dart';
 
+enum BackupOperation { none, signingIn, backingUp, listingBackups, restoring }
+
 class BackupProvider extends ChangeNotifier {
   final BackupService _service = BackupService();
 
   bool isSignedIn = false;
   String? accountEmail;
   DateTime? lastBackupAt;
-  bool isBusy = false;
+  BackupOperation operation = BackupOperation.none;
   String? errorMessage;
+
+  bool get isBusy => operation != BackupOperation.none;
 
   Future<void> init() async {
     final account = await _service.signInSilently();
@@ -21,7 +25,7 @@ class BackupProvider extends ChangeNotifier {
   }
 
   Future<void> signIn() async {
-    isBusy = true;
+    operation = BackupOperation.signingIn;
     errorMessage = null;
     notifyListeners();
     try {
@@ -31,7 +35,7 @@ class BackupProvider extends ChangeNotifier {
     } catch (e) {
       errorMessage = e.toString();
     } finally {
-      isBusy = false;
+      operation = BackupOperation.none;
       notifyListeners();
     }
   }
@@ -44,7 +48,7 @@ class BackupProvider extends ChangeNotifier {
   }
 
   Future<void> backupNow() async {
-    isBusy = true;
+    operation = BackupOperation.backingUp;
     errorMessage = null;
     notifyListeners();
     try {
@@ -53,15 +57,24 @@ class BackupProvider extends ChangeNotifier {
     } catch (e) {
       errorMessage = e.toString();
     } finally {
-      isBusy = false;
+      operation = BackupOperation.none;
       notifyListeners();
     }
   }
 
-  Future<List<drive.File>> listBackups() => _service.listBackups();
+  Future<List<drive.File>> listBackups() async {
+    operation = BackupOperation.listingBackups;
+    notifyListeners();
+    try {
+      return await _service.listBackups();
+    } finally {
+      operation = BackupOperation.none;
+      notifyListeners();
+    }
+  }
 
   Future<void> restoreFrom(String fileId) async {
-    isBusy = true;
+    operation = BackupOperation.restoring;
     errorMessage = null;
     notifyListeners();
     try {
@@ -69,7 +82,7 @@ class BackupProvider extends ChangeNotifier {
     } catch (e) {
       errorMessage = e.toString();
     } finally {
-      isBusy = false;
+      operation = BackupOperation.none;
       notifyListeners();
     }
   }

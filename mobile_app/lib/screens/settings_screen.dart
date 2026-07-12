@@ -471,7 +471,7 @@ class SettingsScreen extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: backup.isBusy ? null : () => backup.signIn(),
               icon: const Icon(Icons.login_rounded, size: 18),
-              label: Text(backup.isBusy ? l10n.connecting : l10n.connectGoogleAccount),
+              label: Text(backup.operation == BackupOperation.signingIn ? l10n.connecting : l10n.connectGoogleAccount),
             ),
           ] else ...[
             _buildInfoRow(l10n.account, backup.accountEmail ?? "-"),
@@ -483,14 +483,14 @@ class SettingsScreen extends StatelessWidget {
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: backup.isBusy ? null : () => _backupNow(context, backup),
-              icon: backup.isBusy
+              icon: backup.operation == BackupOperation.backingUp
                   ? const SizedBox(
                       width: 16,
                       height: 16,
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                     )
                   : const Icon(Icons.backup_rounded, size: 18),
-              label: Text(backup.isBusy ? l10n.working : l10n.backUpNow),
+              label: Text(backup.operation == BackupOperation.backingUp ? l10n.working : l10n.backUpNow),
             ),
             const SizedBox(height: 12),
             Row(
@@ -498,8 +498,14 @@ class SettingsScreen extends StatelessWidget {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: backup.isBusy ? null : () => _showRestoreSheet(context, backup),
-                    icon: const Icon(Icons.restore_rounded, size: 18),
-                    label: Text(l10n.restoreBackup),
+                    icon: backup.operation == BackupOperation.listingBackups
+                        ? SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                          )
+                        : const Icon(Icons.restore_rounded, size: 18),
+                    label: Text(backup.operation == BackupOperation.listingBackups ? l10n.working : l10n.restoreBackup),
                   ),
                 ),
                 const SizedBox(width: 12),
