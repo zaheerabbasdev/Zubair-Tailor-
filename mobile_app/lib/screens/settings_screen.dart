@@ -577,6 +577,7 @@ class SettingsScreen extends StatelessWidget {
 
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -593,7 +594,7 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 360),
+                constraints: BoxConstraints(maxHeight: MediaQuery.of(sheetContext).size.height * 0.5),
                 child: ListView.separated(
                   shrinkWrap: true,
                   itemCount: backups.length,
