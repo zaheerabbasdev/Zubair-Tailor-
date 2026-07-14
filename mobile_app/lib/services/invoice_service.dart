@@ -26,7 +26,7 @@ class InvoiceService {
             if (shopPhone != null && shopPhone.isNotEmpty) pw.Text(shopPhone, style: const pw.TextStyle(fontSize: 10)),
             if (shopAddress != null && shopAddress.isNotEmpty) pw.Text(shopAddress, style: const pw.TextStyle(fontSize: 10)),
             pw.SizedBox(height: 4),
-            pw.Text('Invoice #${order.id ?? ''}'),
+            pw.Text('Order Number: ${order.orderNumber ?? order.id.toString()}'),
             pw.Text('Date: ${DateTime.now().toString().split(' ')[0]}'),
             pw.Divider(height: 24),
             pw.Text('Bill To', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12)),

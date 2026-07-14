@@ -22,7 +22,7 @@ class DatabaseHelper {
     final path = await databasePath;
     return openDatabase(
       path,
-      version: 4,
+      version: 5,
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
       },
@@ -100,6 +100,7 @@ class DatabaseHelper {
             notes           TEXT,
             image_url       TEXT,
             created_at      TEXT NOT NULL,
+            order_number    TEXT,
             FOREIGN KEY (customer_id)    REFERENCES customers(id)    ON DELETE CASCADE,
             FOREIGN KEY (measurement_id) REFERENCES measurements(id) ON DELETE RESTRICT
           )
@@ -152,6 +153,11 @@ class DatabaseHelper {
           await db.execute("ALTER TABLE measurements ADD COLUMN pant_waist TEXT");
           await db.execute("ALTER TABLE measurements ADD COLUMN pant_hip TEXT");
           await db.execute("ALTER TABLE measurements ADD COLUMN pant_pancha TEXT");
+        }
+        if (oldVersion < 5) {
+          await db.execute("ALTER TABLE orders ADD COLUMN order_number TEXT");
+          // Generate a fallback order number for existing orders
+          await db.execute("UPDATE orders SET order_number = 'ORD-' || id WHERE order_number IS NULL");
         }
       },
     );

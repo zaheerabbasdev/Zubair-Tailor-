@@ -29,10 +29,20 @@ class OrderRepository {
     final db = await DatabaseHelper.instance.database;
     final data = order.toJson();
     data.remove('id');
+    data.remove('order_number');
     data['status'] = 'Pending';
-    data['created_at'] = DateTime.now().toIso8601String();
+    final now = DateTime.now();
+    data['created_at'] = now.toIso8601String();
+    
     final id = await db.insert('orders', data);
-    return order.copyWith(id: id, status: 'Pending');
+    
+    // Generate order number with format ORD-YYYYMMDD-ID
+    final dateStr = "${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}";
+    final orderNumber = "ORD-$dateStr-$id";
+    
+    await db.update('orders', {'order_number': orderNumber}, where: 'id = ?', whereArgs: [id]);
+    
+    return order.copyWith(id: id, status: 'Pending', orderNumber: orderNumber);
   }
 
   Future<Order> update(Order order) async {

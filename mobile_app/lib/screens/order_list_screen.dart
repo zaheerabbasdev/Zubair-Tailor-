@@ -24,10 +24,17 @@ class OrderListScreen extends StatefulWidget {
 
 class _OrderListScreenState extends State<OrderListScreen> {
   final OrderRepository _orderRepository = OrderRepository();
+  final TextEditingController _searchController = TextEditingController();
   List<Order> _orders = [];
   List<Order> _filteredOrders = [];
   bool _isLoading = true;
   String _selectedFilter = 'All';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -57,11 +64,20 @@ class _OrderListScreenState extends State<OrderListScreen> {
   void _applyFilter(String filter) {
     setState(() {
       _selectedFilter = filter;
-      if (filter == 'All') {
-        _filteredOrders = _orders;
-      } else {
-        _filteredOrders = _orders.where((o) => o.status == filter).toList();
-      }
+      final query = _searchController.text.toLowerCase();
+      
+      _filteredOrders = _orders.where((o) {
+        final matchesFilter = filter == 'All' || o.status == filter;
+        if (!matchesFilter) return false;
+        
+        if (query.isEmpty) return true;
+        
+        final nameMatch = o.customerName?.toLowerCase().contains(query) ?? false;
+        final phoneMatch = o.customerPhone?.toLowerCase().contains(query) ?? false;
+        final orderNumMatch = o.orderNumber?.toLowerCase().contains(query) ?? false;
+        
+        return nameMatch || phoneMatch || orderNumMatch;
+      }).toList();
     });
   }
 
@@ -115,6 +131,22 @@ class _OrderListScreenState extends State<OrderListScreen> {
                   ),
                 );
               }).toList(),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: l10n.search,
+                prefixIcon: const Icon(Icons.search_rounded, color: AppColors.primary),
+                filled: true,
+                fillColor: AppColors.surfaceCard,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+              ),
+              onChanged: (value) => _applyFilter(_selectedFilter),
             ),
           ),
           Expanded(
@@ -184,6 +216,17 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                                 child: Column(
                                                   crossAxisAlignment: CrossAxisAlignment.start,
                                                   children: [
+                                                    if (order.orderNumber != null) ...[
+                                                      Text(
+                                                        order.orderNumber!,
+                                                        style: const TextStyle(
+                                                          fontSize: 12,
+                                                          color: AppColors.primary,
+                                                          fontWeight: FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 2),
+                                                    ],
                                                     Row(
                                                       children: [
                                                         if (order.priority) ...[
@@ -311,22 +354,22 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                                   MaterialPageRoute(builder: (_) => OrderFormScreen(order: order)),
                                                 ).then((_) => _fetchOrders()),
                                               ),
-                                              TextButton.icon(
-                                                icon: Icon(
-                                                  Icons.edit_road_rounded,
-                                                  size: 18,
-                                                  color: order.status == 'Delivered' ? Colors.grey : AppColors.primary,
-                                                ),
-                                                label: Text(
-                                                  l10n.updateStatus,
-                                                  style: TextStyle(
-                                                    color: order.status == 'Delivered' ? Colors.grey : AppColors.primary,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 13,
+                                              () {
+                                                final action = _getNextStatusAction(order, l10n);
+                                                
+                                                return TextButton.icon(
+                                                  icon: Icon(action.$2, size: 18, color: action.$3),
+                                                  label: Text(
+                                                    action.$1,
+                                                    style: TextStyle(
+                                                      color: action.$3,
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 13,
+                                                    ),
                                                   ),
-                                                ),
-                                                onPressed: order.status == 'Delivered' ? null : () => _showStatusUpdateDialog(order),
-                                              ),
+                                                  onPressed: action.$4,
+                                                );
+                                              }(),
                                             ],
                                           ),
                                         ),
@@ -412,61 +455,93 @@ class _OrderListScreenState extends State<OrderListScreen> {
     );
   }
 
-  void _showStatusUpdateDialog(Order order) {
+  (String, IconData, Color, VoidCallback?) _getNextStatusAction(Order order, AppLocalizations l10n) {
+    if (order.status == 'Pending') {
+      return (localizedStatus(l10n, 'In Progress'), Icons.play_arrow_rounded, AppColors.statusInProgress, () => _updateOrderStatusToNext(order, 'In Progress'));
+    } else if (order.status == 'In Progress') {
+      return (localizedStatus(l10n, 'Ready'), Icons.check_circle_outline, Colors.amber.shade800, () => _updateOrderStatusToNext(order, 'Ready'));
+    } else if (order.status == 'Ready') {
+      return (localizedStatus(l10n, 'Delivered'), Icons.local_shipping_outlined, Colors.green.shade800, () => _updateOrderStatusToNext(order, 'Delivered'));
+    } else { // Delivered
+      final due = order.price - order.amountPaid;
+      if (due > 0) {
+        return ('Pay Due (Rs. $due)', Icons.payments_outlined, AppColors.primary, () => _showPaymentDialog(order));
+      } else {
+        return ('Fully Paid', Icons.verified_rounded, Colors.grey, null);
+      }
+    }
+  }
+
+  Future<void> _updateOrderStatusToNext(Order order, String nextStatus) async {
+    await _orderRepository.updateStatus(order.id!, nextStatus);
+    if (nextStatus == 'Delivered') {
+      try {
+        await NotificationService.instance.cancelDeliveryReminder(order.id!);
+      } catch (_) {}
+      
+      // If there's due payment, automatically show payment dialog when moving to Delivered
+      if (order.price - order.amountPaid > 0) {
+        if (mounted) {
+          _fetchOrders();
+          _showPaymentDialog(order.copyWith(status: nextStatus)); // show dialog with updated order
+          return; // Skip normal fetch below since dialog does it
+        }
+      }
+    }
+    if (mounted) {
+      context.read<BackupProvider>().syncInBackground();
+      _fetchOrders();
+    }
+  }
+
+  void _showPaymentDialog(Order order) {
     final l10n = AppLocalizations.of(context)!;
-    showModalBottomSheet(
+    final due = order.price - order.amountPaid;
+    final TextEditingController amountController = TextEditingController(text: due.toString());
+
+    showDialog(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
-        child: Column(
+      builder: (ctx) => AlertDialog(
+        title: Text('Confirm Payment', style: const TextStyle(fontWeight: FontWeight.bold)),
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  l10n.updateStatus,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close_rounded),
-                  onPressed: () => Navigator.pop(context),
-                )
-              ],
-            ),
+            Text('Total Due: Rs. $due', style: const TextStyle(fontWeight: FontWeight.w500)),
             const SizedBox(height: 16),
-            ...['Pending', 'In Progress', 'Ready', 'Delivered'].map((status) {
-              final statusColor = AppColors.statusColor(status);
-              return ListTile(
-                leading: Container(
-                  width: 12,
-                  height: 12,
-                  decoration: BoxDecoration(color: statusColor, shape: BoxShape.circle),
-                ),
-                title: Text(localizedStatus(l10n, status), style: const TextStyle(fontWeight: FontWeight.bold)),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                onTap: () async {
-                  await _orderRepository.updateStatus(order.id!, status);
-                  if (status == 'Delivered') {
-                    try {
-                      await NotificationService.instance.cancelDeliveryReminder(order.id!);
-                    } catch (_) {}
-                  }
-                  if (mounted) {
-                    context.read<BackupProvider>().syncInBackground();
-                    Navigator.pop(context);
-                    _fetchOrders();
-                  }
-                },
-              );
-            }),
+            TextField(
+              controller: amountController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: l10n.amountPaid,
+                border: const OutlineInputBorder(),
+              ),
+            ),
           ],
         ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.cancel, style: TextStyle(color: AppColors.textMedium)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.statusReady),
+            onPressed: () async {
+              final val = double.tryParse(amountController.text) ?? 0.0;
+              final newPaid = order.amountPaid + val;
+              final updatedOrder = order.copyWith(amountPaid: newPaid);
+              await _orderRepository.update(updatedOrder);
+              
+              if (mounted) {
+                context.read<BackupProvider>().syncInBackground();
+                Navigator.pop(ctx);
+                _fetchOrders();
+              }
+            },
+            child: Text(l10n.confirm, style: const TextStyle(color: Colors.white)),
+          ),
+        ],
       ),
     );
   }
