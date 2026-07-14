@@ -68,7 +68,7 @@ class AppDrawer extends StatelessWidget {
           ),
           _buildDrawerItem(
             icon: Icons.people_alt_rounded,
-            title: l10n.totalCustomers,
+            title: l10n.customersLabel,
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerListScreen()));
@@ -76,7 +76,7 @@ class AppDrawer extends StatelessWidget {
           ),
           _buildDrawerItem(
             icon: Icons.receipt_long_rounded,
-            title: l10n.totalOrders,
+            title: l10n.ordersLabel,
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (_) => const OrderListScreen()));
