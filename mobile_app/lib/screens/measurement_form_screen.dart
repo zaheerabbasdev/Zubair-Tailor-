@@ -112,10 +112,10 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
     _pantHipCont = TextEditingController(text: m?.pantHip?.toString() ?? '');
     _pantPanchaCont = TextEditingController(text: m?.pantPancha?.toString() ?? '');
 
-    _banType = m?.banType;
-    _damanType = m?.damanType;
-    _sleeveType = m?.sleeveType;
-    _pocketType = m?.pocketType;
+    _banType = m?.banType == 'none' ? null : m?.banType;
+    _damanType = m?.damanType == 'none' ? null : m?.damanType;
+    _sleeveType = m?.sleeveType == 'none' ? null : m?.sleeveType;
+    _pocketType = m?.pocketType == 'none' ? null : m?.pocketType;
 
     _frontPocket = m?.frontPocket ?? false;
     _shalwarPocket = m?.shalwarPocket ?? false;
@@ -247,25 +247,21 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
                   _buildDropdownLocalized(l10n.banType, _banType, {
                     'ban': l10n.ban,
                     'gol_ban': l10n.golBan,
-                    'none': l10n.none,
                   }, (v) => setState(() => _banType = v)),
                   const SizedBox(height: 16),
                   _buildDropdownLocalized(l10n.damanType, _damanType, {
                     'square': l10n.square,
                     'round': l10n.round,
-                    'none': l10n.none,
                   }, (v) => setState(() => _damanType = v)),
                   const SizedBox(height: 16),
                   _buildDropdownLocalized(l10n.sleeveType, _sleeveType, {
                     'gol': l10n.gol,
                     'cuff': l10n.cuff,
-                    'none': l10n.none,
                   }, (v) => setState(() => _sleeveType = v)),
                   const SizedBox(height: 16),
                   _buildDropdownLocalized(l10n.sidePocket, _pocketType, {
                     'single': l10n.single,
                     'double': l10n.double,
-                    'none': l10n.none,
                   }, (v) => setState(() => _pocketType = v)),
                 ],
               ),
