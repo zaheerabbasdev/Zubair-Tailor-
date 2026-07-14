@@ -13,7 +13,7 @@ import '../screens/notifications_screen.dart';
 import '../screens/order_list_screen.dart';
 import '../screens/reports_screen.dart';
 import '../screens/settings_screen.dart';
-import '../screens/upcoming_deliveries_screen.dart';
+
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -80,14 +80,6 @@ class AppDrawer extends StatelessWidget {
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (_) => const OrderListScreen()));
-            },
-          ),
-          _buildDrawerItem(
-            icon: Icons.local_shipping_outlined,
-            title: l10n.upcomingDeliveries,
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const UpcomingDeliveriesScreen()));
             },
           ),
           _buildDrawerItem(

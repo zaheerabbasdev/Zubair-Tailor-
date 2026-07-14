@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../l10n/app_localizations.dart';
 import '../models/order.dart';
 import '../providers/theme_provider.dart';
 import '../repositories/order_repository.dart';
-import 'order_form_screen.dart';
 import '../utils/app_colors.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -17,16 +17,36 @@ class NotificationsScreen extends StatefulWidget {
 class _NotificationsScreenState extends State<NotificationsScreen> {
   final OrderRepository _orderRepository = OrderRepository();
   List<Order> _orders = [];
+  Set<String> _readOrderIds = {};
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    _loadReadStatus();
     _fetchOrders();
+  }
+  
+  Future<void> _loadReadStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _readOrderIds = (prefs.getStringList('read_notifications') ?? []).toSet();
+    });
+  }
+  
+  Future<void> _markAsRead(Order o) async {
+    if (o.id == null) return;
+    final idStr = o.id.toString();
+    if (!_readOrderIds.contains(idStr)) {
+      final prefs = await SharedPreferences.getInstance();
+      _readOrderIds.add(idStr);
+      await prefs.setStringList('read_notifications', _readOrderIds.toList());
+      setState(() {});
+    }
   }
 
   DateTime _reminderTime(Order o) {
-    final d = o.deliveryDate!.subtract(const Duration(days: 1));
+    final d = o.deliveryDate!.subtract(const Duration(days: 3));
     return DateTime(d.year, d.month, d.day, 9, 0);
   }
 
@@ -107,10 +127,61 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       ],
     );
   }
+  
+  void _showNotificationModal(Order o, AppLocalizations l10n, bool sent, DateTime reminderTime) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppColors.surfaceCard,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(
+            o.customerName ?? l10n.unknown,
+            style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "${l10n.clothingType}: ${o.clothingType}",
+                style: TextStyle(color: AppColors.textDark, fontSize: 16),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                "Due for delivery on ${o.deliveryDate?.toString().split(' ')[0] ?? 'N/A'}",
+                style: TextStyle(color: AppColors.textMedium, fontSize: 15),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                sent
+                    ? l10n.reminderSent
+                    : l10n.reminderScheduledFor(reminderTime.toString().split(' ')[0]),
+                style: TextStyle(color: AppColors.primary, fontSize: 14, fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _markAsRead(o);
+              },
+              child: Text("Close", style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        );
+      }
+    ).then((_) {
+      _markAsRead(o);
+    });
+  }
 
   Widget _buildReminderCard(Order o, AppLocalizations l10n) {
     final reminderTime = _reminderTime(o);
     final sent = reminderTime.isBefore(DateTime.now());
+    final isRead = _readOrderIds.contains(o.id.toString());
+    
     final accentColor = sent ? AppColors.textMedium : AppColors.accent;
 
     return Container(
@@ -124,10 +195,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: InkWell(
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => OrderFormScreen(order: o)),
-          ).then((_) => _fetchOrders()),
+          onTap: () => _showNotificationModal(o, l10n, sent, reminderTime),
           child: Container(
             decoration: BoxDecoration(
               border: Border(left: BorderSide(color: accentColor, width: 5)),
@@ -156,21 +224,36 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         o.customerName ?? l10n.unknown,
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textDark),
+                        style: TextStyle(
+                          fontWeight: isRead ? FontWeight.normal : FontWeight.bold, 
+                          fontStyle: isRead ? FontStyle.italic : FontStyle.normal,
+                          fontSize: 16, 
+                          color: AppColors.textDark
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         o.clothingType,
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
-                        style: const TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontWeight: isRead ? FontWeight.normal : FontWeight.bold, 
+                          fontStyle: isRead ? FontStyle.italic : FontStyle.normal,
+                          fontSize: 13, 
+                          color: AppColors.primary
+                        ),
                       ),
                       const SizedBox(height: 6),
                       Text(
                         sent
                             ? l10n.reminderSent
                             : l10n.reminderScheduledFor(reminderTime.toString().split(' ')[0]),
-                        style: TextStyle(color: accentColor, fontSize: 12, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontWeight: isRead ? FontWeight.normal : FontWeight.bold, 
+                          fontStyle: isRead ? FontStyle.italic : FontStyle.normal,
+                          fontSize: 12, 
+                          color: accentColor
+                        ),
                       ),
                     ],
                   ),

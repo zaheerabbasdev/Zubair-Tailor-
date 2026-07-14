@@ -14,7 +14,7 @@ import '../widgets/app_drawer.dart';
 import 'customer_detail_screen.dart';
 import 'customer_list_screen.dart';
 import 'order_list_screen.dart';
-import 'upcoming_deliveries_screen.dart';
+
 import 'reports_screen.dart';
 import 'expense_list_screen.dart';
 
@@ -309,14 +309,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Icons.receipt_long_rounded,
         const Color(0xFF5D4037),
         () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OrderListScreen())),
-      ),
-      const SizedBox(height: 12),
-      _buildNavigationItem(
-        context,
-        l10n.upcomingDeliveries,
-        Icons.local_shipping_outlined,
-        AppColors.statusInProgress,
-        () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UpcomingDeliveriesScreen())),
       ),
       const SizedBox(height: 12),
       _buildNavigationItem(
