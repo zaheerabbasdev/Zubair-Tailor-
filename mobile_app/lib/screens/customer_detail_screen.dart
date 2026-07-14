@@ -548,6 +548,19 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
   }
 
   Widget _buildMeasurementCard(Measurement m, AppLocalizations l10n) {
+    final isUr = Localizations.localeOf(context).languageCode == 'ur';
+    String clothingTypeLocalized = m.clothingType;
+    if (isUr) {
+      if (m.clothingType == 'Shalwar Kameez') clothingTypeLocalized = 'شلوار قمیض';
+      else if (m.clothingType == 'Waistcoat') clothingTypeLocalized = 'واسکٹ';
+      else if (m.clothingType == 'Two Piece') clothingTypeLocalized = 'ٹو پیس';
+      else if (m.clothingType == 'Three Piece') clothingTypeLocalized = 'تھری پیس';
+    }
+
+    String getLabel(String en, String ur) {
+      return isUr ? ur : en;
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -563,7 +576,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           child: ExpansionTile(
             initiallyExpanded: true,
             title: Text(
-              l10n.createdOn(m.createdAt != null ? m.createdAt!.split('T')[0] : l10n.na),
+              "$clothingTypeLocalized - ${l10n.createdOn(m.createdAt != null ? m.createdAt!.split('T')[0] : l10n.na)}",
               style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark),
             ),
             leading: Container(
@@ -582,37 +595,72 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                   children: [
                     Divider(height: 1, color: AppColors.divider),
                     const SizedBox(height: 16),
-                    _buildSectionHeaderTitle(l10n.dimensions.toUpperCase()),
-                    const SizedBox(height: 12),
-                    _buildMeasurementRow(l10n.shirtLength, m.shirtLength, l10n.shirtWidth, m.shirtWidth),
-                    _buildMeasurementRow(l10n.shoulder, m.shoulder, l10n.sleeve, m.sleeve),
-                    _buildMeasurementRow(l10n.chest, m.chest, l10n.ghera, m.ghera),
-                    _buildMeasurementRow(l10n.pancha, m.pancha, l10n.shalwarLength, m.shalwarLength),
-                    _buildMeasurementRow(l10n.collar, m.collar, null, null),
+                    if (m.clothingType == 'Shalwar Kameez') ...[
+                      _buildSectionHeaderTitle(l10n.dimensions.toUpperCase()),
+                      const SizedBox(height: 12),
+                      _buildMeasurementRow(l10n.shirtLength, m.shirtLength, l10n.shirtWidth, m.shirtWidth),
+                      _buildMeasurementRow(l10n.shoulder, m.shoulder, l10n.sleeve, m.sleeve),
+                      _buildMeasurementRow(l10n.chest, m.chest, l10n.ghera, m.ghera),
+                      _buildMeasurementRow(l10n.pancha, m.pancha, l10n.shalwarLength, m.shalwarLength),
+                      _buildMeasurementRow(l10n.collar, m.collar, null, null),
 
-                    const SizedBox(height: 20),
-                    _buildSectionHeaderTitle(l10n.style.toUpperCase()),
-                    const SizedBox(height: 12),
-                    _buildMeasurementRow(l10n.banType, _getLocalizedValue(m.banType, l10n), l10n.damanType, _getLocalizedValue(m.damanType, l10n)),
-                    _buildMeasurementRow(l10n.sleeveType, _getLocalizedValue(m.sleeveType, l10n), null, null),
+                      const SizedBox(height: 20),
+                      _buildSectionHeaderTitle(l10n.style.toUpperCase()),
+                      const SizedBox(height: 12),
+                      _buildMeasurementRow(l10n.banType, _getLocalizedValue(m.banType, l10n), l10n.damanType, _getLocalizedValue(m.damanType, l10n)),
+                      _buildMeasurementRow(l10n.sleeveType, _getLocalizedValue(m.sleeveType, l10n), null, null),
 
-                    const SizedBox(height: 20),
-                    _buildSectionHeaderTitle(l10n.stitchingDetails.toUpperCase()),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        if (m.frontPocket) _buildBadge(l10n.frontPocket),
-                        if (m.pocketType != null && m.pocketType != 'none') _buildBadge("${l10n.sidePocket}: ${_getLocalizedValue(m.pocketType, l10n)}"),
-                        if (m.shalwarPocket) _buildBadge(l10n.shalwarPocket),
-                        if (m.ringButton) _buildBadge(l10n.ringButton),
-                        if (m.doubleSilai) _buildBadge(l10n.doubleSilai),
-                        if (m.chamakTar) _buildBadge(l10n.chamakTar),
-                        if (m.sadaPatti) _buildBadge(l10n.sadaPatti),
-                        if (m.designButton) _buildBadge(l10n.designButton),
-                      ],
-                    ),
+                      const SizedBox(height: 20),
+                      _buildSectionHeaderTitle(l10n.stitchingDetails.toUpperCase()),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          if (m.frontPocket) _buildBadge(l10n.frontPocket),
+                          if (m.pocketType != null && m.pocketType != 'none') _buildBadge("${l10n.sidePocket}: ${_getLocalizedValue(m.pocketType, l10n)}"),
+                          if (m.shalwarPocket) _buildBadge(l10n.shalwarPocket),
+                          if (m.ringButton) _buildBadge(l10n.ringButton),
+                          if (m.doubleSilai) _buildBadge(l10n.doubleSilai),
+                          if (m.chamakTar) _buildBadge(l10n.chamakTar),
+                          if (m.sadaPatti) _buildBadge(l10n.sadaPatti),
+                          if (m.designButton) _buildBadge(l10n.designButton),
+                        ],
+                      ),
+                    ] else if (m.clothingType == 'Waistcoat') ...[
+                      _buildSectionHeaderTitle(getLabel('WAISTCOAT DIMENSIONS', 'واسکٹ کی پیمائش')),
+                      const SizedBox(height: 12),
+                      _buildMeasurementRow(getLabel('Length', 'لمبائی'), m.shirtLength, getLabel('Shoulder', 'تیرا'), m.shoulder),
+                      _buildMeasurementRow(getLabel('Chest', 'چھاتی'), m.chest, l10n.waist, m.waist),
+                      _buildMeasurementRow(getLabel('Collar', 'کالر'), m.collar, null, null),
+                    ] else if (m.clothingType == 'Two Piece') ...[
+                      _buildSectionHeaderTitle(getLabel('COAT DIMENSIONS', 'کوٹ کی پیمائش')),
+                      const SizedBox(height: 12),
+                      _buildMeasurementRow(getLabel('Coat Length', 'کوٹ لمبائی'), m.coatLength, getLabel('Coat Shoulder', 'کوٹ تیرا'), m.coatShoulder),
+                      _buildMeasurementRow(getLabel('Coat Sleeve', 'کوٹ بازو'), m.coatSleeve, getLabel('Coat Chest', 'کوٹ چھاتی'), m.coatChest),
+                      _buildMeasurementRow(getLabel('Coat Waist', 'کوٹ کمر'), m.coatWaist, getLabel('Coat Collar', 'کوٹ کالر'), m.coatCollar),
+                      const SizedBox(height: 20),
+                      _buildSectionHeaderTitle(getLabel('PANT DIMENSIONS', 'پینٹ کی پیمائش')),
+                      const SizedBox(height: 12),
+                      _buildMeasurementRow(getLabel('Pant Length', 'پینٹ لمبائی'), m.pantLength, getLabel('Pant Waist', 'پینٹ کمر'), m.pantWaist),
+                      _buildMeasurementRow(getLabel('Pant Hip', 'پینٹ ہپ'), m.pantHip, getLabel('Pant Pancha / Bottom', 'پینٹ پانچا'), m.pantPancha),
+                    ] else if (m.clothingType == 'Three Piece') ...[
+                      _buildSectionHeaderTitle(getLabel('COAT DIMENSIONS', 'کوٹ کی پیمائش')),
+                      const SizedBox(height: 12),
+                      _buildMeasurementRow(getLabel('Coat Length', 'کوٹ لمبائی'), m.coatLength, getLabel('Coat Shoulder', 'کوٹ تیرا'), m.coatShoulder),
+                      _buildMeasurementRow(getLabel('Coat Sleeve', 'کوٹ بازو'), m.coatSleeve, getLabel('Coat Chest', 'کوٹ چھاتی'), m.coatChest),
+                      _buildMeasurementRow(getLabel('Coat Waist', 'کوٹ کمر'), m.coatWaist, getLabel('Coat Collar', 'کوٹ کالر'), m.coatCollar),
+                      const SizedBox(height: 20),
+                      _buildSectionHeaderTitle(getLabel('VEST DIMENSIONS', 'واسکٹ کی پیمائش')),
+                      const SizedBox(height: 12),
+                      _buildMeasurementRow(getLabel('Vest Length', 'واسکٹ لمبائی'), m.vestLength, getLabel('Vest Chest', 'واسکٹ چھاتی'), m.vestChest),
+                      _buildMeasurementRow(getLabel('Vest Waist', 'واسکٹ کمر'), m.vestWaist, null, null),
+                      const SizedBox(height: 20),
+                      _buildSectionHeaderTitle(getLabel('PANT DIMENSIONS', 'پینٹ کی پیمائش')),
+                      const SizedBox(height: 12),
+                      _buildMeasurementRow(getLabel('Pant Length', 'پینٹ لمبائی'), m.pantLength, getLabel('Pant Waist', 'پینٹ کمر'), m.pantWaist),
+                      _buildMeasurementRow(getLabel('Pant Hip', 'پینٹ ہپ'), m.pantHip, getLabel('Pant Pancha / Bottom', 'پینٹ پانچا'), m.pantPancha),
+                    ],
 
                     if (m.notes != null && m.notes!.isNotEmpty) ...[
                       const SizedBox(height: 20),

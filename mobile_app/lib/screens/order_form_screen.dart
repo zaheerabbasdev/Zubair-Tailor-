@@ -38,7 +38,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
   List<Customer> _customers = [];
   List<Measurement> _measurements = [];
 
-  late final TextEditingController _clothingTypeController;
+  String? _selectedClothingType;
   late final TextEditingController _priceController;
   late final TextEditingController _amountPaidController;
   late final TextEditingController _notesController;
@@ -51,7 +51,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
   void initState() {
     super.initState();
     final o = widget.order;
-    _clothingTypeController = TextEditingController(text: o?.clothingType ?? '');
+    _selectedClothingType = o?.clothingType;
     _priceController = TextEditingController(text: o != null ? o.price.toString() : '');
     _amountPaidController = TextEditingController(text: o != null && o.amountPaid > 0 ? o.amountPaid.toString() : '');
     _notesController = TextEditingController(text: o?.notes ?? '');
@@ -63,7 +63,6 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
 
   @override
   void dispose() {
-    _clothingTypeController.dispose();
     _priceController.dispose();
     _amountPaidController.dispose();
     _notesController.dispose();
@@ -87,25 +86,33 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
       }
       if (customer != null) {
         setState(() => _selectedCustomer = customer);
-        await _fetchMeasurements(customer.id!);
-        Measurement? measurement;
-        for (final m in _measurements) {
-          if (m.id == o.measurementId) {
-            measurement = m;
-            break;
-          }
-        }
-        if (measurement != null) {
-          setState(() => _selectedMeasurement = measurement);
-        }
+        await _fetchMeasurements(customer.id!, preselectId: o.measurementId);
       }
     }
   }
 
-  Future<void> _fetchMeasurements(int customerId) async {
+  Future<void> _fetchMeasurements(int customerId, {int? preselectId}) async {
     final data = await _measurementRepository.getForCustomer(customerId);
+    // Measurements are ordered DESC so data.first is the most recent
+    Measurement? toSelect;
+    if (preselectId != null) {
+      // Edit mode: find the exact measurement that was previously saved
+      for (final m in data) {
+        if (m.id == preselectId) {
+          toSelect = m;
+          break;
+        }
+      }
+    }
+    // If no specific id requested (new order), auto-select the latest one
+    toSelect ??= data.isNotEmpty ? data.first : null;
+
     setState(() {
       _measurements = data;
+      _selectedMeasurement = toSelect;
+      if (toSelect != null) {
+        _selectedClothingType = toSelect.clothingType;
+      }
     });
   }
 
@@ -231,6 +238,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                       setState(() {
                         _selectedCustomer = val;
                         _selectedMeasurement = null;
+                        _selectedClothingType = null;
                       });
                       if (val != null) _fetchMeasurements(val.id!);
                     },
@@ -247,13 +255,28 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
                       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
                     ),
-                    items: _measurements.map((m) => DropdownMenuItem(value: m, child: Text("ID: ${m.id} (${m.createdAt?.split('T')[0] ?? ''})"))).toList(),
-                    onChanged: (val) => setState(() => _selectedMeasurement = val),
+                    isExpanded: true,
+                    items: _measurements.map((m) => DropdownMenuItem(
+                      value: m,
+                      child: Text(
+                        "ID: ${m.id}  (${m.createdAt?.split('T')[0] ?? ''})",
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    )).toList(),
+                    onChanged: (val) {
+                      setState(() {
+                        _selectedMeasurement = val;
+                        if (val != null) {
+                          _selectedClothingType = val.clothingType;
+                        }
+                      });
+                    },
                     validator: (v) => v == null ? l10n.pleaseSelectMeasurement : null,
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _clothingTypeController,
+                  DropdownButtonFormField<String>(
+                    value: _selectedClothingType,
+                    isExpanded: true,
                     decoration: InputDecoration(
                       labelText: l10n.clothingType,
                       prefixIcon: const Icon(Icons.style_outlined, color: AppColors.primary),
@@ -262,6 +285,16 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
                       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
                     ),
+                    items: [
+                      'Shalwar Kameez',
+                      'Waistcoat',
+                      'Two Piece',
+                      'Three Piece',
+                    ].map((type) => DropdownMenuItem(
+                      value: type,
+                      child: Text(type, overflow: TextOverflow.ellipsis),
+                    )).toList(),
+                    onChanged: (val) => setState(() => _selectedClothingType = val),
                     validator: (v) => v == null || v.isEmpty ? l10n.pleaseEnterClothingType : null,
                   ),
                   const SizedBox(height: 16),
@@ -436,7 +469,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
       id: widget.order?.id,
       customerId: _selectedCustomer!.id!,
       measurementId: _selectedMeasurement!.id!,
-      clothingType: _clothingTypeController.text,
+      clothingType: _selectedClothingType ?? '',
       price: double.tryParse(_priceController.text) ?? 0,
       amountPaid: double.tryParse(_amountPaidController.text) ?? 0,
       priority: _priority,

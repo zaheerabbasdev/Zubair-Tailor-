@@ -22,7 +22,7 @@ class DatabaseHelper {
     final path = await databasePath;
     return openDatabase(
       path,
-      version: 3,
+      version: 4,
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
       },
@@ -43,6 +43,7 @@ class DatabaseHelper {
           CREATE TABLE measurements (
             id              INTEGER PRIMARY KEY AUTOINCREMENT,
             customer_id     INTEGER NOT NULL,
+            clothing_type   TEXT NOT NULL DEFAULT 'Shalwar Kameez',
             shirt_length    TEXT,
             shirt_width     TEXT,
             shoulder        TEXT,
@@ -66,6 +67,20 @@ class DatabaseHelper {
             design_button   INTEGER NOT NULL DEFAULT 0,
             notes           TEXT,
             created_at      TEXT NOT NULL,
+            waist           TEXT,
+            coat_length     TEXT,
+            coat_shoulder   TEXT,
+            coat_sleeve     TEXT,
+            coat_chest      TEXT,
+            coat_waist      TEXT,
+            coat_collar     TEXT,
+            vest_length     TEXT,
+            vest_chest      TEXT,
+            vest_waist      TEXT,
+            pant_length     TEXT,
+            pant_waist      TEXT,
+            pant_hip        TEXT,
+            pant_pancha     TEXT,
             FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
           )
         ''');
@@ -120,6 +135,23 @@ class DatabaseHelper {
               created_at    TEXT    NOT NULL
             )
           ''');
+        }
+        if (oldVersion < 4) {
+          await db.execute("ALTER TABLE measurements ADD COLUMN clothing_type TEXT NOT NULL DEFAULT 'Shalwar Kameez'");
+          await db.execute("ALTER TABLE measurements ADD COLUMN waist TEXT");
+          await db.execute("ALTER TABLE measurements ADD COLUMN coat_length TEXT");
+          await db.execute("ALTER TABLE measurements ADD COLUMN coat_shoulder TEXT");
+          await db.execute("ALTER TABLE measurements ADD COLUMN coat_sleeve TEXT");
+          await db.execute("ALTER TABLE measurements ADD COLUMN coat_chest TEXT");
+          await db.execute("ALTER TABLE measurements ADD COLUMN coat_waist TEXT");
+          await db.execute("ALTER TABLE measurements ADD COLUMN coat_collar TEXT");
+          await db.execute("ALTER TABLE measurements ADD COLUMN vest_length TEXT");
+          await db.execute("ALTER TABLE measurements ADD COLUMN vest_chest TEXT");
+          await db.execute("ALTER TABLE measurements ADD COLUMN vest_waist TEXT");
+          await db.execute("ALTER TABLE measurements ADD COLUMN pant_length TEXT");
+          await db.execute("ALTER TABLE measurements ADD COLUMN pant_waist TEXT");
+          await db.execute("ALTER TABLE measurements ADD COLUMN pant_hip TEXT");
+          await db.execute("ALTER TABLE measurements ADD COLUMN pant_pancha TEXT");
         }
       },
     );

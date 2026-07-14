@@ -37,7 +37,9 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
   final MeasurementRepository _measurementRepository = MeasurementRepository();
   final _formKey = GlobalKey<FormState>();
 
-  // Dimensions
+  String _clothingType = 'Shalwar Kameez';
+
+  // Dimensions (Shalwar Kameez & Waistcoat overlapping fields)
   late TextEditingController _shirtLengthCont;
   late TextEditingController _shirtWidthCont;
   late TextEditingController _shoulderCont;
@@ -48,6 +50,22 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
   late TextEditingController _panchaCont;
   late TextEditingController _shalwarLengthCont;
   late TextEditingController _notesCont;
+
+  // New dimensions
+  late TextEditingController _waistCont;
+  late TextEditingController _coatLengthCont;
+  late TextEditingController _coatShoulderCont;
+  late TextEditingController _coatSleeveCont;
+  late TextEditingController _coatChestCont;
+  late TextEditingController _coatWaistCont;
+  late TextEditingController _coatCollarCont;
+  late TextEditingController _vestLengthCont;
+  late TextEditingController _vestChestCont;
+  late TextEditingController _vestWaistCont;
+  late TextEditingController _pantLengthCont;
+  late TextEditingController _pantWaistCont;
+  late TextEditingController _pantHipCont;
+  late TextEditingController _pantPanchaCont;
 
   // Style Selections
   String? _banType;
@@ -68,6 +86,8 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
   void initState() {
     super.initState();
     final m = widget.measurement;
+    _clothingType = m?.clothingType ?? 'Shalwar Kameez';
+
     _shirtLengthCont = TextEditingController(text: m?.shirtLength?.toString() ?? '');
     _shirtWidthCont = TextEditingController(text: m?.shirtWidth?.toString() ?? '');
     _shoulderCont = TextEditingController(text: m?.shoulder?.toString() ?? '');
@@ -78,6 +98,21 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
     _panchaCont = TextEditingController(text: m?.pancha?.toString() ?? '');
     _shalwarLengthCont = TextEditingController(text: m?.shalwarLength?.toString() ?? '');
     _notesCont = TextEditingController(text: m?.notes ?? '');
+
+    _waistCont = TextEditingController(text: m?.waist?.toString() ?? '');
+    _coatLengthCont = TextEditingController(text: m?.coatLength?.toString() ?? '');
+    _coatShoulderCont = TextEditingController(text: m?.coatShoulder?.toString() ?? '');
+    _coatSleeveCont = TextEditingController(text: m?.coatSleeve?.toString() ?? '');
+    _coatChestCont = TextEditingController(text: m?.coatChest?.toString() ?? '');
+    _coatWaistCont = TextEditingController(text: m?.coatWaist?.toString() ?? '');
+    _coatCollarCont = TextEditingController(text: m?.coatCollar?.toString() ?? '');
+    _vestLengthCont = TextEditingController(text: m?.vestLength?.toString() ?? '');
+    _vestChestCont = TextEditingController(text: m?.vestChest?.toString() ?? '');
+    _vestWaistCont = TextEditingController(text: m?.vestWaist?.toString() ?? '');
+    _pantLengthCont = TextEditingController(text: m?.pantLength?.toString() ?? '');
+    _pantWaistCont = TextEditingController(text: m?.pantWaist?.toString() ?? '');
+    _pantHipCont = TextEditingController(text: m?.pantHip?.toString() ?? '');
+    _pantPanchaCont = TextEditingController(text: m?.pantPancha?.toString() ?? '');
 
     _banType = m?.banType;
     _damanType = m?.damanType;
@@ -91,6 +126,41 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
     _chamakTar = m?.chamakTar ?? false;
     _sadaPatti = m?.sadaPatti ?? false;
     _designButton = m?.designButton ?? false;
+  }
+
+  @override
+  void dispose() {
+    _shirtLengthCont.dispose();
+    _shirtWidthCont.dispose();
+    _shoulderCont.dispose();
+    _sleeveCont.dispose();
+    _collarCont.dispose();
+    _chestCont.dispose();
+    _gheraCont.dispose();
+    _panchaCont.dispose();
+    _shalwarLengthCont.dispose();
+    _notesCont.dispose();
+
+    _waistCont.dispose();
+    _coatLengthCont.dispose();
+    _coatShoulderCont.dispose();
+    _coatSleeveCont.dispose();
+    _coatChestCont.dispose();
+    _coatWaistCont.dispose();
+    _coatCollarCont.dispose();
+    _vestLengthCont.dispose();
+    _vestChestCont.dispose();
+    _vestWaistCont.dispose();
+    _pantLengthCont.dispose();
+    _pantWaistCont.dispose();
+    _pantHipCont.dispose();
+    _pantPanchaCont.dispose();
+    super.dispose();
+  }
+
+  String _getLabel(String en, String? ur) {
+    final isUr = Localizations.localeOf(context).languageCode == 'ur';
+    return (isUr && ur != null) ? ur : en;
   }
 
   @override
@@ -124,71 +194,171 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
-            _buildSectionCard(
-              icon: Icons.straighten_rounded,
-              title: l10n.dimensions,
-              children: [
-                _buildTwoFieldRow(l10n.shirtLength, _shirtLengthCont, l10n.shirtWidth, _shirtWidthCont),
-                const SizedBox(height: 16),
-                _buildTwoFieldRow(l10n.shoulder, _shoulderCont, l10n.sleeve, _sleeveCont),
-                const SizedBox(height: 16),
-                _buildTwoFieldRow(l10n.chest, _chestCont, l10n.ghera, _gheraCont),
-                const SizedBox(height: 16),
-                _buildTwoFieldRow(l10n.pancha, _panchaCont, l10n.shalwarLength, _shalwarLengthCont),
-                const SizedBox(height: 16),
-                _buildField(l10n.collar, _collarCont),
-              ],
-            ),
-            const SizedBox(height: 20),
+            // Clothing Type Card (always visible at top of form)
             _buildSectionCard(
               icon: Icons.style_rounded,
-              title: l10n.style,
+              title: l10n.clothingType,
               children: [
-                _buildDropdownLocalized(l10n.banType, _banType, {
-                  'ban': l10n.ban,
-                  'gol_ban': l10n.golBan,
-                  'none': l10n.none,
-                }, (v) => setState(() => _banType = v)),
-                const SizedBox(height: 16),
-                _buildDropdownLocalized(l10n.damanType, _damanType, {
-                  'square': l10n.square,
-                  'round': l10n.round,
-                  'none': l10n.none,
-                }, (v) => setState(() => _damanType = v)),
-                const SizedBox(height: 16),
-                _buildDropdownLocalized(l10n.sleeveType, _sleeveType, {
-                  'gol': l10n.gol,
-                  'cuff': l10n.cuff,
-                  'none': l10n.none,
-                }, (v) => setState(() => _sleeveType = v)),
-                const SizedBox(height: 16),
-                _buildDropdownLocalized(l10n.sidePocket, _pocketType, {
-                  'single': l10n.single,
-                  'double': l10n.double,
-                  'none': l10n.none,
-                }, (v) => setState(() => _pocketType = v)),
-              ],
-            ),
-            const SizedBox(height: 20),
-            _buildSectionCard(
-              icon: Icons.tune_rounded,
-              title: l10n.stitchingDetails,
-              children: [
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: [
-                    _buildToggleChip(l10n.frontPocket, _frontPocket, (v) => setState(() => _frontPocket = v)),
-                    _buildToggleChip(l10n.shalwarPocket, _shalwarPocket, (v) => setState(() => _shalwarPocket = v)),
-                    _buildToggleChip(l10n.ringButton, _ringButton, (v) => setState(() => _ringButton = v)),
-                    _buildToggleChip(l10n.doubleSilai, _doubleSilai, (v) => setState(() => _doubleSilai = v)),
-                    _buildToggleChip(l10n.chamakTar, _chamakTar, (v) => setState(() => _chamakTar = v)),
-                    _buildToggleChip(l10n.sadaPatti, _sadaPatti, (v) => setState(() => _sadaPatti = v)),
-                    _buildToggleChip(l10n.designButton, _designButton, (v) => setState(() => _designButton = v)),
+                DropdownButtonFormField<String>(
+                  value: _clothingType,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: AppColors.background,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                  ),
+                  items: [
+                    DropdownMenuItem(value: 'Shalwar Kameez', child: Text(_getLabel('Shalwar Kameez', 'شلوار قمیض'))),
+                    DropdownMenuItem(value: 'Waistcoat', child: Text(_getLabel('Waistcoat', 'واسکٹ'))),
+                    DropdownMenuItem(value: 'Two Piece', child: Text(_getLabel('Two Piece', 'ٹو پیس'))),
+                    DropdownMenuItem(value: 'Three Piece', child: Text(_getLabel('Three Piece', 'تھری پیس'))),
                   ],
+                  onChanged: (v) {
+                    if (v != null) {
+                      setState(() {
+                        _clothingType = v;
+                      });
+                    }
+                  },
                 ),
               ],
             ),
+            const SizedBox(height: 20),
+
+            // Conditional forms based on clothing type
+            if (_clothingType == 'Shalwar Kameez') ...[
+              _buildSectionCard(
+                icon: Icons.straighten_rounded,
+                title: l10n.dimensions,
+                children: [
+                  _buildTwoFieldRow(l10n.shirtLength, _shirtLengthCont, l10n.shirtWidth, _shirtWidthCont),
+                  const SizedBox(height: 16),
+                  _buildTwoFieldRow(l10n.shoulder, _shoulderCont, l10n.sleeve, _sleeveCont),
+                  const SizedBox(height: 16),
+                  _buildTwoFieldRow(l10n.chest, _chestCont, l10n.ghera, _gheraCont),
+                  const SizedBox(height: 16),
+                  _buildTwoFieldRow(l10n.pancha, _panchaCont, l10n.shalwarLength, _shalwarLengthCont),
+                  const SizedBox(height: 16),
+                  _buildField(l10n.collar, _collarCont),
+                ],
+              ),
+              const SizedBox(height: 20),
+              _buildSectionCard(
+                icon: Icons.style_rounded,
+                title: l10n.style,
+                children: [
+                  _buildDropdownLocalized(l10n.banType, _banType, {
+                    'ban': l10n.ban,
+                    'gol_ban': l10n.golBan,
+                    'none': l10n.none,
+                  }, (v) => setState(() => _banType = v)),
+                  const SizedBox(height: 16),
+                  _buildDropdownLocalized(l10n.damanType, _damanType, {
+                    'square': l10n.square,
+                    'round': l10n.round,
+                    'none': l10n.none,
+                  }, (v) => setState(() => _damanType = v)),
+                  const SizedBox(height: 16),
+                  _buildDropdownLocalized(l10n.sleeveType, _sleeveType, {
+                    'gol': l10n.gol,
+                    'cuff': l10n.cuff,
+                    'none': l10n.none,
+                  }, (v) => setState(() => _sleeveType = v)),
+                  const SizedBox(height: 16),
+                  _buildDropdownLocalized(l10n.sidePocket, _pocketType, {
+                    'single': l10n.single,
+                    'double': l10n.double,
+                    'none': l10n.none,
+                  }, (v) => setState(() => _pocketType = v)),
+                ],
+              ),
+              const SizedBox(height: 20),
+              _buildSectionCard(
+                icon: Icons.tune_rounded,
+                title: l10n.stitchingDetails,
+                children: [
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      _buildToggleChip(l10n.frontPocket, _frontPocket, (v) => setState(() => _frontPocket = v)),
+                      _buildToggleChip(l10n.shalwarPocket, _shalwarPocket, (v) => setState(() => _shalwarPocket = v)),
+                      _buildToggleChip(l10n.ringButton, _ringButton, (v) => setState(() => _ringButton = v)),
+                      _buildToggleChip(l10n.doubleSilai, _doubleSilai, (v) => setState(() => _doubleSilai = v)),
+                      _buildToggleChip(l10n.chamakTar, _chamakTar, (v) => setState(() => _chamakTar = v)),
+                      _buildToggleChip(l10n.sadaPatti, _sadaPatti, (v) => setState(() => _sadaPatti = v)),
+                      _buildToggleChip(l10n.designButton, _designButton, (v) => setState(() => _designButton = v)),
+                    ],
+                  ),
+                ],
+              ),
+            ] else if (_clothingType == 'Waistcoat') ...[
+              _buildSectionCard(
+                icon: Icons.straighten_rounded,
+                title: _getLabel('Waistcoat Dimensions', 'واسکٹ کی پیمائش'),
+                children: [
+                  _buildTwoFieldRow(_getLabel('Length', 'لمبائی'), _shirtLengthCont, _getLabel('Shoulder', 'تیرا'), _shoulderCont),
+                  const SizedBox(height: 16),
+                  _buildTwoFieldRow(_getLabel('Chest', 'چھاتی'), _chestCont, l10n.waist, _waistCont),
+                  const SizedBox(height: 16),
+                  _buildField(_getLabel('Collar', 'کالر'), _collarCont),
+                ],
+              ),
+            ] else if (_clothingType == 'Two Piece') ...[
+              _buildSectionCard(
+                icon: Icons.straighten_rounded,
+                title: _getLabel('Coat Dimensions', 'کوٹ کی پیمائش'),
+                children: [
+                  _buildTwoFieldRow(_getLabel('Coat Length', 'کوٹ لمبائی'), _coatLengthCont, _getLabel('Coat Shoulder', 'کوٹ تیرا'), _coatShoulderCont),
+                  const SizedBox(height: 16),
+                  _buildTwoFieldRow(_getLabel('Coat Sleeve', 'کوٹ بازو'), _coatSleeveCont, _getLabel('Coat Chest', 'کوٹ چھاتی'), _coatChestCont),
+                  const SizedBox(height: 16),
+                  _buildTwoFieldRow(_getLabel('Coat Waist', 'کوٹ کمر'), _coatWaistCont, _getLabel('Coat Collar', 'کوٹ کالر'), _coatCollarCont),
+                ],
+              ),
+              const SizedBox(height: 20),
+              _buildSectionCard(
+                icon: Icons.straighten_rounded,
+                title: _getLabel('Pant Dimensions', 'پینٹ کی پیمائش'),
+                children: [
+                  _buildTwoFieldRow(_getLabel('Pant Length', 'پینٹ لمبائی'), _pantLengthCont, _getLabel('Pant Waist', 'پینٹ کمر'), _pantWaistCont),
+                  const SizedBox(height: 16),
+                  _buildTwoFieldRow(_getLabel('Pant Hip', 'پینٹ ہپ'), _pantHipCont, _getLabel('Pant Pancha / Bottom', 'پینٹ پانچا'), _pantPanchaCont),
+                ],
+              ),
+            ] else if (_clothingType == 'Three Piece') ...[
+              _buildSectionCard(
+                icon: Icons.straighten_rounded,
+                title: _getLabel('Coat Dimensions', 'کوٹ کی پیمائش'),
+                children: [
+                  _buildTwoFieldRow(_getLabel('Coat Length', 'کوٹ لمبائی'), _coatLengthCont, _getLabel('Coat Shoulder', 'کوٹ تیرا'), _coatShoulderCont),
+                  const SizedBox(height: 16),
+                  _buildTwoFieldRow(_getLabel('Coat Sleeve', 'کوٹ بازو'), _coatSleeveCont, _getLabel('Coat Chest', 'کوٹ چھاتی'), _coatChestCont),
+                  const SizedBox(height: 16),
+                  _buildTwoFieldRow(_getLabel('Coat Waist', 'کوٹ کمر'), _coatWaistCont, _getLabel('Coat Collar', 'کوٹ کالر'), _coatCollarCont),
+                ],
+              ),
+              const SizedBox(height: 20),
+              _buildSectionCard(
+                icon: Icons.straighten_rounded,
+                title: _getLabel('Vest Dimensions', 'واسکٹ کی پیمائش'),
+                children: [
+                  _buildTwoFieldRow(_getLabel('Vest Length', 'واسکٹ لمبائی'), _vestLengthCont, _getLabel('Vest Chest', 'واسکٹ چھاتی'), _vestChestCont),
+                  const SizedBox(height: 16),
+                  _buildField(_getLabel('Vest Waist', 'واسکٹ کمر'), _vestWaistCont),
+                ],
+              ),
+              const SizedBox(height: 20),
+              _buildSectionCard(
+                icon: Icons.straighten_rounded,
+                title: _getLabel('Pant Dimensions', 'پینٹ کی پیمائش'),
+                children: [
+                  _buildTwoFieldRow(_getLabel('Pant Length', 'پینٹ لمبائی'), _pantLengthCont, _getLabel('Pant Waist', 'پینٹ کمر'), _pantWaistCont),
+                  const SizedBox(height: 16),
+                  _buildTwoFieldRow(_getLabel('Pant Hip', 'پینٹ ہپ'), _pantHipCont, _getLabel('Pant Pancha / Bottom', 'پینٹ پانچا'), _pantPanchaCont),
+                ],
+              ),
+            ],
             const SizedBox(height: 20),
             Container(
               padding: const EdgeInsets.all(20),
@@ -369,27 +539,42 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
   void _submit() async {
     final measurement = Measurement(
       customerId: widget.customer.id!,
+      clothingType: _clothingType,
       shirtLength: _shirtLengthCont.text,
       shirtWidth: _shirtWidthCont.text,
       shoulder: _shoulderCont.text,
       sleeve: _sleeveCont.text,
       collar: _collarCont.text,
-      banType: _banType,
+      banType: _clothingType == 'Shalwar Kameez' ? _banType : null,
       chest: _chestCont.text,
       ghera: _gheraCont.text,
       pancha: _panchaCont.text,
       shalwarLength: _shalwarLengthCont.text,
-      damanType: _damanType,
-      frontPocket: _frontPocket,
-      pocketType: _pocketType,
-      sleeveType: _sleeveType,
-      shalwarPocket: _shalwarPocket,
-      ringButton: _ringButton,
-      doubleSilai: _doubleSilai,
-      chamakTar: _chamakTar,
-      sadaPatti: _sadaPatti,
-      designButton: _designButton,
+      damanType: _clothingType == 'Shalwar Kameez' ? _damanType : null,
+      frontPocket: _clothingType == 'Shalwar Kameez' ? _frontPocket : false,
+      pocketType: _clothingType == 'Shalwar Kameez' ? _pocketType : null,
+      sleeveType: _clothingType == 'Shalwar Kameez' ? _sleeveType : null,
+      shalwarPocket: _clothingType == 'Shalwar Kameez' ? _shalwarPocket : false,
+      ringButton: _clothingType == 'Shalwar Kameez' ? _ringButton : false,
+      doubleSilai: _clothingType == 'Shalwar Kameez' ? _doubleSilai : false,
+      chamakTar: _clothingType == 'Shalwar Kameez' ? _chamakTar : false,
+      sadaPatti: _clothingType == 'Shalwar Kameez' ? _sadaPatti : false,
+      designButton: _clothingType == 'Shalwar Kameez' ? _designButton : false,
       notes: _notesCont.text,
+      waist: _waistCont.text,
+      coatLength: _coatLengthCont.text,
+      coatShoulder: _coatShoulderCont.text,
+      coatSleeve: _coatSleeveCont.text,
+      coatChest: _coatChestCont.text,
+      coatWaist: _coatWaistCont.text,
+      coatCollar: _coatCollarCont.text,
+      vestLength: _vestLengthCont.text,
+      vestChest: _vestChestCont.text,
+      vestWaist: _vestWaistCont.text,
+      pantLength: _pantLengthCont.text,
+      pantWaist: _pantWaistCont.text,
+      pantHip: _pantHipCont.text,
+      pantPancha: _pantPanchaCont.text,
     );
 
     try {
