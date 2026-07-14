@@ -49,7 +49,6 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
   late TextEditingController _gheraCont;
   late TextEditingController _panchaCont;
   late TextEditingController _shalwarLengthCont;
-  late TextEditingController _notesCont;
 
   // New dimensions
   late TextEditingController _waistCont;
@@ -97,7 +96,6 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
     _gheraCont = TextEditingController(text: m?.ghera?.toString() ?? '');
     _panchaCont = TextEditingController(text: m?.pancha?.toString() ?? '');
     _shalwarLengthCont = TextEditingController(text: m?.shalwarLength?.toString() ?? '');
-    _notesCont = TextEditingController(text: m?.notes ?? '');
 
     _waistCont = TextEditingController(text: m?.waist?.toString() ?? '');
     _coatLengthCont = TextEditingController(text: m?.coatLength?.toString() ?? '');
@@ -139,7 +137,6 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
     _gheraCont.dispose();
     _panchaCont.dispose();
     _shalwarLengthCont.dispose();
-    _notesCont.dispose();
 
     _waistCont.dispose();
     _coatLengthCont.dispose();
@@ -359,24 +356,7 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
                 ],
               ),
             ],
-            const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceCard,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: AppColors.cardShadow,
-              ),
-              child: TextFormField(
-                controller: _notesCont,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  labelText: l10n.notes,
-                  alignLabelWithHint: true,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-              ),
-            ),
+
             const SizedBox(height: 40),
             ElevatedButton(
               onPressed: _submit,
@@ -560,7 +540,7 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
       chamakTar: _clothingType == 'Shalwar Kameez' ? _chamakTar : false,
       sadaPatti: _clothingType == 'Shalwar Kameez' ? _sadaPatti : false,
       designButton: _clothingType == 'Shalwar Kameez' ? _designButton : false,
-      notes: _notesCont.text,
+      notes: '',
       waist: _waistCont.text,
       coatLength: _coatLengthCont.text,
       coatShoulder: _coatShoulderCont.text,

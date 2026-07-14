@@ -41,7 +41,6 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
   String? _selectedClothingType;
   late final TextEditingController _priceController;
   late final TextEditingController _amountPaidController;
-  late final TextEditingController _notesController;
   DateTime? _deliveryDate;
   bool _priority = false;
   String? _imagePath;
@@ -54,7 +53,6 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
     _selectedClothingType = o?.clothingType;
     _priceController = TextEditingController(text: o != null ? o.price.toString() : '');
     _amountPaidController = TextEditingController(text: o != null && o.amountPaid > 0 ? o.amountPaid.toString() : '');
-    _notesController = TextEditingController(text: o?.notes ?? '');
     _deliveryDate = o?.deliveryDate;
     _priority = o?.priority ?? false;
     _imagePath = o?.imageUrl;
@@ -65,7 +63,6 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
   void dispose() {
     _priceController.dispose();
     _amountPaidController.dispose();
-    _notesController.dispose();
     super.dispose();
   }
 
@@ -381,19 +378,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                     side: BorderSide(color: _priority ? AppColors.primary : AppColors.divider),
                     showCheckmark: false,
                   ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _notesController,
-                    maxLines: 2,
-                    decoration: InputDecoration(
-                      labelText: l10n.notes,
-                      alignLabelWithHint: true,
-                      filled: true,
-                      fillColor: AppColors.background,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-                    ),
-                  ),
+
                   const SizedBox(height: 16),
                   InkWell(
                     onTap: _pickImage,
@@ -475,7 +460,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
       priority: _priority,
       deliveryDate: _deliveryDate,
       status: widget.order?.status ?? 'Pending',
-      notes: _notesController.text,
+      notes: '',
       imageUrl: _imagePath,
     );
 

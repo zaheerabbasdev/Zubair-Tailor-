@@ -20,7 +20,6 @@ class _AddCustomerSheetState extends State<AddCustomerSheet> {
   late final TextEditingController _nameController;
   late final TextEditingController _phoneController;
   late final TextEditingController _addressController;
-  late final TextEditingController _notesController;
   final CustomerRepository _customerRepository = CustomerRepository();
   bool _isLoading = false;
 
@@ -32,7 +31,6 @@ class _AddCustomerSheetState extends State<AddCustomerSheet> {
     _nameController = TextEditingController(text: widget.customer?.name ?? '');
     _phoneController = TextEditingController(text: widget.customer?.phone ?? '');
     _addressController = TextEditingController(text: widget.customer?.address ?? '');
-    _notesController = TextEditingController(text: widget.customer?.notes ?? '');
   }
 
   @override
@@ -40,7 +38,6 @@ class _AddCustomerSheetState extends State<AddCustomerSheet> {
     _nameController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
-    _notesController.dispose();
     super.dispose();
   }
 
@@ -55,7 +52,7 @@ class _AddCustomerSheetState extends State<AddCustomerSheet> {
       name: _nameController.text,
       phone: _phoneController.text,
       address: _addressController.text,
-      notes: _notesController.text,
+      notes: '',
     );
 
     try {
@@ -166,20 +163,7 @@ class _AddCustomerSheetState extends State<AddCustomerSheet> {
                   ),
                   maxLines: 2,
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _notesController,
-                  decoration: InputDecoration(
-                    labelText: l10n.notes,
-                    alignLabelWithHint: true,
-                    prefixIcon: const Icon(Icons.sticky_note_2_outlined, color: AppColors.primary),
-                    filled: true,
-                    fillColor: AppColors.background,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-                  ),
-                  maxLines: 2,
-                ),
+
                 const SizedBox(height: 28),
                 ElevatedButton(
                   onPressed: _isLoading ? null : _submit,
