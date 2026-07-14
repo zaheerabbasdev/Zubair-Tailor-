@@ -173,46 +173,6 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                   else
                     ..._measurements.map((m) => _buildMeasurementCard(m, l10n)),
 
-                  const SizedBox(height: 32),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        l10n.totalOrders,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textDark,
-                            ),
-                      ),
-                      Text(
-                        "${_orders.length}",
-                        style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textMedium),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  if (_orders.isEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceCard,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: AppColors.cardShadow,
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(Icons.shopping_bag_outlined, size: 48, color: AppColors.iconMuted),
-                          const SizedBox(height: 16),
-                          Text(
-                            l10n.noOrdersFound,
-                            style: TextStyle(color: AppColors.textMedium, fontWeight: FontWeight.w500),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    )
-                  else
-                    ..._orders.map((o) => _buildOrderCard(o, l10n)),
                 ],
               ),
             ),
