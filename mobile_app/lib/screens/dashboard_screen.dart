@@ -28,13 +28,10 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   final CustomerRepository _customerRepository = CustomerRepository();
   final OrderRepository _orderRepository = OrderRepository();
-  final _searchController = TextEditingController();
-
   List<Customer> _customers = [];
   List<Order> _orders = [];
   Map<String, dynamic>? _summary;
   bool _isLoading = true;
-  String _searchQuery = '';
 
   @override
   void initState() {
@@ -46,7 +43,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   void dispose() {
-    _searchController.dispose();
     super.dispose();
   }
 
@@ -76,20 +72,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  List<Customer> get _matchingCustomers {
-    final q = _searchQuery.toLowerCase();
-    return _customers
-        .where((c) => c.name.toLowerCase().contains(q) || c.phone.contains(q) || (c.uniqueId != null && c.uniqueId!.contains(q)))
-        .toList();
-  }
-
-  List<Order> get _matchingOrders {
-    final q = _searchQuery.toLowerCase();
-    return _orders
-        .where((o) => (o.customerName ?? '').toLowerCase().contains(q) || o.clothingType.toLowerCase().contains(q))
-        .toList();
-  }
-
   Customer? _customerFor(Order o) {
     for (final c in _customers) {
       if (c.id == o.customerId) return c;
@@ -101,7 +83,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     AppColors.dark = context.watch<ThemeProvider>().isDark;
     final l10n = AppLocalizations.of(context)!;
-    final isSearching = _searchQuery.isNotEmpty;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -118,122 +99,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
                 children: [
-                  TextField(
-                    controller: _searchController,
-                    onChanged: (v) => setState(() => _searchQuery = v),
-                    decoration: InputDecoration(
-                      hintText: l10n.search,
-                      prefixIcon: const Icon(Icons.search_rounded, color: AppColors.primary),
-                      suffixIcon: isSearching
-                          ? IconButton(
-                              icon: Icon(Icons.clear_rounded, color: AppColors.textMedium),
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() => _searchQuery = '');
-                              },
-                            )
-                          : null,
-                      fillColor: AppColors.surfaceCard,
-                      filled: true,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  if (isSearching)
-                    ..._buildSearchResults()
-                  else
-                    ..._buildDashboardContent(l10n),
+                  ..._buildDashboardContent(l10n),
                 ],
               ),
             ),
     );
-  }
-
-  List<Widget> _buildSearchResults() {
-    final l10n = AppLocalizations.of(context)!;
-    final customers = _matchingCustomers;
-    final orders = _matchingOrders;
-
-    if (customers.isEmpty && orders.isEmpty) {
-      return [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 40),
-          child: Center(
-            child: Text(
-              l10n.noResultsFound,
-              style: TextStyle(color: AppColors.textMedium, fontWeight: FontWeight.w500),
-            ),
-          ),
-        ),
-      ];
-    }
-
-    return [
-      if (customers.isNotEmpty) ...[
-        Text(l10n.customersLabel, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-        const SizedBox(height: 12),
-        ...customers.map((c) => Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceCard,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: AppColors.cardShadow,
-                border: Border.all(color: AppColors.divider, width: 1),
-              ),
-              child: ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.08), shape: BoxShape.circle),
-                  child: const Icon(Icons.person_rounded, color: AppColors.primary),
-                ),
-                title: Text(c.name, style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                subtitle: Text(c.phone, style: TextStyle(color: AppColors.textMedium)),
-                trailing: Icon(Icons.chevron_right_rounded, color: AppColors.textMedium),
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CustomerDetailScreen(customer: c))).then((_) => _fetchSummary()),
-              ),
-            )),
-        const SizedBox(height: 12),
-      ],
-      if (orders.isNotEmpty) ...[
-        Text(l10n.ordersLabel, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-        const SizedBox(height: 12),
-        ...orders.map((o) {
-          final statusColor = AppColors.statusColor(o.status);
-          return Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceCard,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: AppColors.cardShadow,
-              border: Border(left: BorderSide(color: statusColor, width: 4)),
-            ),
-            child: ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.08), borderRadius: BorderRadius.circular(12)),
-                child: const Icon(Icons.shopping_bag_outlined, color: AppColors.primary),
-              ),
-              title: Text(o.customerName ?? l10n.unknown, style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark)),
-              subtitle: Text(o.clothingType, style: TextStyle(color: AppColors.textMedium)),
-              trailing: Text(localizedStatus(l10n, o.status), style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 12)),
-              onTap: () {
-                final customer = _customerFor(o);
-                if (customer != null) {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => CustomerDetailScreen(customer: customer))).then((_) => _fetchSummary());
-                }
-              },
-            ),
-          );
-        }),
-      ],
-    ];
   }
 
   List<Widget> _buildDashboardContent(AppLocalizations l10n) {
@@ -283,49 +153,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       // Stats Grid (Premium Cards)
       _buildStatsGrid(),
       const SizedBox(height: 32),
-
-      Text(
-        l10n.navigation,
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textDark,
-        ),
-      ),
-      const SizedBox(height: 12),
-
-      // Premium Navigation Cards
-      _buildNavigationItem(
-        context,
-        l10n.totalCustomers,
-        Icons.people_alt_rounded,
-        Colors.blue.shade700,
-        () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerListScreen())),
-      ),
-      const SizedBox(height: 12),
-      _buildNavigationItem(
-        context,
-        l10n.totalOrders,
-        Icons.receipt_long_rounded,
-        const Color(0xFF5D4037),
-        () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OrderListScreen())),
-      ),
-      const SizedBox(height: 12),
-      _buildNavigationItem(
-        context,
-        l10n.reports,
-        Icons.bar_chart_rounded,
-        AppColors.secondary,
-        () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsScreen())),
-      ),
-      const SizedBox(height: 12),
-      _buildNavigationItem(
-        context,
-        l10n.expenses,
-        Icons.account_balance_wallet_outlined,
-        Colors.deepPurple,
-        () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ExpenseListScreen())),
-      ),
     ];
   }
 
