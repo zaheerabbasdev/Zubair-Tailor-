@@ -247,17 +247,6 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                                         ),
                                                       ],
                                                     ),
-                                                    const SizedBox(height: 6),
-                                                    Text(
-                                                      order.clothingType,
-                                                      overflow: TextOverflow.ellipsis,
-                                                      maxLines: 1,
-                                                      style: const TextStyle(
-                                                        fontSize: 14,
-                                                        color: AppColors.primary,
-                                                        fontWeight: FontWeight.bold,
-                                                      ),
-                                                    ),
                                                     const SizedBox(height: 4),
                                                     Row(
                                                       children: [
@@ -281,7 +270,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                                 crossAxisAlignment: CrossAxisAlignment.end,
                                                 children: [
                                                   Text(
-                                                    "Rs. ${order.price}",
+                                                    "Rs. ${order.price.toInt()}",
                                                     style: TextStyle(
                                                       fontWeight: FontWeight.bold,
                                                       fontSize: 16,
@@ -297,7 +286,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                                         borderRadius: BorderRadius.circular(8),
                                                       ),
                                                       child: Text(
-                                                        "${l10n.dueLabel}: Rs. ${order.price - order.amountPaid}",
+                                                        "${l10n.dueLabel}: Rs. ${(order.price - order.amountPaid).toInt()}",
                                                         style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary),
                                                       ),
                                                     ),
@@ -312,10 +301,8 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                         Divider(height: 1, color: AppColors.divider),
                                         Padding(
                                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                          child: Wrap(
-                                            alignment: WrapAlignment.end,
-                                            spacing: 4,
-                                            runSpacing: 4,
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                             children: [
                                               if (order.customerPhone != null)
                                                 TextButton.icon(
@@ -354,22 +341,25 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                                   MaterialPageRoute(builder: (_) => OrderFormScreen(order: order)),
                                                 ).then((_) => _fetchOrders()),
                                               ),
-                                              () {
-                                                final action = _getNextStatusAction(order, l10n);
-                                                
-                                                return TextButton.icon(
-                                                  icon: Icon(action.$2, size: 18, color: action.$3),
-                                                  label: Text(
-                                                    action.$1,
-                                                    style: TextStyle(
-                                                      color: action.$3,
-                                                      fontWeight: FontWeight.bold,
-                                                      fontSize: 13,
-                                                    ),
-                                                  ),
-                                                  onPressed: action.$4,
-                                                );
-                                              }(),
+                                            ],
+                                          ),
+                                        ),
+                                        Divider(height: 1, color: AppColors.divider),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.end,
+                                            children: [
+                                              Column(
+                                                crossAxisAlignment: CrossAxisAlignment.end,
+                                                children: [
+                                                  _buildUpdateStatusDropdown(order, l10n),
+                                                  if (order.status == 'Delivered') ...[
+                                                    const SizedBox(height: 4),
+                                                    _buildDeliveredAction(order, l10n),
+                                                  ],
+                                                ],
+                                              ),
                                             ],
                                           ),
                                         ),
@@ -455,22 +445,6 @@ class _OrderListScreenState extends State<OrderListScreen> {
     );
   }
 
-  (String, IconData, Color, VoidCallback?) _getNextStatusAction(Order order, AppLocalizations l10n) {
-    if (order.status == 'Pending') {
-      return (localizedStatus(l10n, 'In Progress'), Icons.play_arrow_rounded, AppColors.statusInProgress, () => _updateOrderStatusToNext(order, 'In Progress'));
-    } else if (order.status == 'In Progress') {
-      return (localizedStatus(l10n, 'Ready'), Icons.check_circle_outline, Colors.amber.shade800, () => _updateOrderStatusToNext(order, 'Ready'));
-    } else if (order.status == 'Ready') {
-      return (localizedStatus(l10n, 'Delivered'), Icons.local_shipping_outlined, Colors.green.shade800, () => _updateOrderStatusToNext(order, 'Delivered'));
-    } else { // Delivered
-      final due = order.price - order.amountPaid;
-      if (due > 0) {
-        return ('Pay Due (Rs. $due)', Icons.payments_outlined, AppColors.primary, () => _showPaymentDialog(order));
-      } else {
-        return ('Fully Paid', Icons.verified_rounded, Colors.grey, null);
-      }
-    }
-  }
 
   Future<void> _updateOrderStatusToNext(Order order, String nextStatus) async {
     await _orderRepository.updateStatus(order.id!, nextStatus);
@@ -497,7 +471,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
   void _showPaymentDialog(Order order) {
     final l10n = AppLocalizations.of(context)!;
     final due = order.price - order.amountPaid;
-    final TextEditingController amountController = TextEditingController(text: due.toString());
+    final TextEditingController amountController = TextEditingController(text: due.toInt().toString());
 
     showDialog(
       context: context,
@@ -507,7 +481,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Total Due: Rs. $due', style: const TextStyle(fontWeight: FontWeight.w500)),
+            Text('Total Due: Rs. ${due.toInt()}', style: const TextStyle(fontWeight: FontWeight.w500)),
             const SizedBox(height: 16),
             TextField(
               controller: amountController,
@@ -544,5 +518,97 @@ class _OrderListScreenState extends State<OrderListScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildUpdateStatusDropdown(Order order, AppLocalizations l10n) {
+    if (order.status == 'Delivered') {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            l10n.updateStatus,
+            style: TextStyle(color: Colors.grey.shade400, fontWeight: FontWeight.bold, fontSize: 13),
+          ),
+          Icon(Icons.arrow_drop_down, color: Colors.grey.shade400, size: 20),
+        ],
+      );
+    }
+
+    String nextStatus = '';
+    IconData nextIcon = Icons.help;
+    Color nextColor = Colors.grey;
+    if (order.status == 'Pending') {
+      nextStatus = 'In Progress';
+      nextIcon = Icons.play_arrow_rounded;
+      nextColor = AppColors.statusInProgress;
+    } else if (order.status == 'In Progress') {
+      nextStatus = 'Ready';
+      nextIcon = Icons.check_circle_outline;
+      nextColor = Colors.amber.shade800;
+    } else if (order.status == 'Ready') {
+      nextStatus = 'Delivered';
+      nextIcon = Icons.local_shipping_outlined;
+      nextColor = Colors.green.shade800;
+    }
+
+    return PopupMenuButton<String>(
+      offset: const Offset(0, 40),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            l10n.updateStatus,
+            style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 13),
+          ),
+          const Icon(Icons.arrow_drop_down, color: AppColors.primary, size: 20),
+        ],
+      ),
+      onSelected: (val) {
+        if (val == nextStatus) {
+          _updateOrderStatusToNext(order, nextStatus);
+        }
+      },
+      itemBuilder: (ctx) => [
+        PopupMenuItem(
+          value: nextStatus,
+          child: Row(
+            children: [
+              Icon(nextIcon, color: nextColor, size: 18),
+              const SizedBox(width: 8),
+              Text(
+                localizedStatus(l10n, nextStatus),
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDeliveredAction(Order order, AppLocalizations l10n) {
+    final due = order.price - order.amountPaid;
+    if (due > 0) {
+      return TextButton.icon(
+        icon: const Icon(Icons.payments_outlined, size: 18, color: AppColors.primary),
+        label: Text(
+          'Pay Due (Rs. ${due.toInt()})',
+          style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 13),
+        ),
+        onPressed: () => _showPaymentDialog(order),
+      );
+    } else {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Fully Paid',
+            style: TextStyle(color: AppColors.statusReady, fontWeight: FontWeight.bold, fontSize: 13),
+          ),
+          const SizedBox(width: 4),
+          const Icon(Icons.verified_rounded, color: AppColors.statusReady, size: 18),
+        ],
+      );
+    }
   }
 }

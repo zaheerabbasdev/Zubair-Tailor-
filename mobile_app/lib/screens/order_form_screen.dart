@@ -51,8 +51,8 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
     super.initState();
     final o = widget.order;
     _selectedClothingType = o?.clothingType;
-    _priceController = TextEditingController(text: o != null ? o.price.toString() : '');
-    _amountPaidController = TextEditingController(text: o != null && o.amountPaid > 0 ? o.amountPaid.toString() : '');
+    _priceController = TextEditingController(text: o != null ? o.price.toInt().toString() : '');
+    _amountPaidController = TextEditingController(text: o != null && o.amountPaid > 0 ? o.amountPaid.toInt().toString() : '');
     _deliveryDate = o?.deliveryDate;
     _priority = o?.priority ?? false;
     _imagePath = o?.imageUrl;
