@@ -668,4 +668,22 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get trialExpiredMessage =>
       'Your free trial has ended. Enter your unlock code to keep using the app.';
+
+  @override
+  String get notifications => 'Notifications';
+
+  @override
+  String get noNotifications => 'No reminders yet';
+
+  @override
+  String get notificationsWillShow =>
+      'Orders with a delivery date will show their prep reminders here';
+
+  @override
+  String get reminderSent => 'Reminder sent';
+
+  @override
+  String reminderScheduledFor(String date) {
+    return 'Reminder scheduled for $date, 9:00 AM';
+  }
 }

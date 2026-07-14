@@ -26,14 +26,14 @@ class NotificationService {
       return;
     }
 
-    final d = order.deliveryDate!;
+    final d = order.deliveryDate!.subtract(const Duration(days: 1));
     final scheduled = DateTime(d.year, d.month, d.day, 9, 0);
     if (scheduled.isBefore(DateTime.now())) return;
 
     await _plugin.zonedSchedule(
       order.id!,
-      "Delivery Due Today",
-      "${order.customerName ?? 'Customer'} — ${order.clothingType} is due for delivery today.",
+      "Delivery Due Tomorrow",
+      "${order.customerName ?? 'Customer'} — ${order.clothingType} is due for delivery tomorrow.",
       tz.TZDateTime.from(scheduled, tz.local),
       const NotificationDetails(
         android: AndroidNotificationDetails(

@@ -245,5 +245,14 @@
   "invalidUnlockCode": "Invalid unlock code",
   "licenseActivatedSuccess": "App activated successfully!",
   "trialExpiredTitle": "Trial Expired",
-  "trialExpiredMessage": "Your free trial has ended. Enter your unlock code to keep using the app."
+  "trialExpiredMessage": "Your free trial has ended. Enter your unlock code to keep using the app.",
+
+  "notifications": "Notifications",
+  "noNotifications": "No reminders yet",
+  "notificationsWillShow": "Orders with a delivery date will show their prep reminders here",
+  "reminderSent": "Reminder sent",
+  "reminderScheduledFor": "Reminder scheduled for {date}, 9:00 AM",
+  "@reminderScheduledFor": {
+    "placeholders": { "date": { "type": "String" } }
+  }
 }

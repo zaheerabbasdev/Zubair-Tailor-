@@ -9,6 +9,7 @@ import '../providers/theme_provider.dart';
 import '../utils/app_colors.dart';
 import '../screens/customer_list_screen.dart';
 import '../screens/expense_list_screen.dart';
+import '../screens/notifications_screen.dart';
 import '../screens/order_list_screen.dart';
 import '../screens/reports_screen.dart';
 import '../screens/settings_screen.dart';
@@ -87,6 +88,14 @@ class AppDrawer extends StatelessWidget {
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (_) => const UpcomingDeliveriesScreen()));
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.notifications_outlined,
+            title: l10n.notifications,
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen()));
             },
           ),
           _buildDrawerItem(

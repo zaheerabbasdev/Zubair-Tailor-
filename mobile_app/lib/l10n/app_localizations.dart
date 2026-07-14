@@ -1381,6 +1381,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your free trial has ended. Enter your unlock code to keep using the app.'**
   String get trialExpiredMessage;
+
+  /// No description provided for @notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifications;
+
+  /// No description provided for @noNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'No reminders yet'**
+  String get noNotifications;
+
+  /// No description provided for @notificationsWillShow.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders with a delivery date will show their prep reminders here'**
+  String get notificationsWillShow;
+
+  /// No description provided for @reminderSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder sent'**
+  String get reminderSent;
+
+  /// No description provided for @reminderScheduledFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder scheduled for {date}, 9:00 AM'**
+  String reminderScheduledFor(String date);
 }
 
 class _AppLocalizationsDelegate

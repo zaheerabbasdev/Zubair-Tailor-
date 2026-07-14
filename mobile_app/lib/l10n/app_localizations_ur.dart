@@ -670,4 +670,22 @@ class AppLocalizationsUr extends AppLocalizations {
   @override
   String get trialExpiredMessage =>
       'آپ کا مفت ٹرائل ختم ہو گیا ہے۔ ایپ استعمال جاری رکھنے کے لیے اپنا ان لاک کوڈ درج کریں۔';
+
+  @override
+  String get notifications => 'اطلاعات';
+
+  @override
+  String get noNotifications => 'ابھی تک کوئی یاد دہانی نہیں';
+
+  @override
+  String get notificationsWillShow =>
+      'ترسیل کی تاریخ والے آرڈرز کی تیاری کی یاد دہانی یہاں ظاہر ہوگی';
+
+  @override
+  String get reminderSent => 'یاد دہانی بھیج دی گئی';
+
+  @override
+  String reminderScheduledFor(String date) {
+    return 'یاد دہانی $date کو صبح 9:00 بجے مقرر ہے';
+  }
 }
