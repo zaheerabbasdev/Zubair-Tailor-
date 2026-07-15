@@ -26,7 +26,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   List<Expense> _expenses = [];
   int _totalCustomers = 0;
   bool _isLoading = true;
-  String _range = 'This Month';
+  String _range = 'Today';
 
   @override
   void initState() {
@@ -173,7 +173,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
-                      children: ['Today', 'This Week', 'This Month', 'This Year', 'Last Year', 'Custom', 'All Time'].map((r) {
+                      children: ['Today', 'This Week', 'This Month', 'This Year', 'Last Year', 'Custom'].map((r) {
                         final selected = _range == r;
                         return Padding(
                           padding: const EdgeInsets.only(right: 8.0),
@@ -181,11 +181,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                             label: Text(localizedRange(l10n, r), style: TextStyle(fontWeight: FontWeight.bold, color: selected ? Colors.white : AppColors.textDark, fontSize: 13)),
                             selected: selected,
                             onSelected: (_) {
-                              if (r == 'Custom') {
-                                _selectCustomRange();
-                              } else {
-                                setState(() => _range = r);
-                              }
+                              setState(() => _range = r);
                             },
                             selectedColor: AppColors.primary,
                             backgroundColor: AppColors.surfaceCard,
@@ -197,6 +193,33 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       }).toList(),
                     ),
                   ),
+                  if (_range == 'Custom') ...[
+                    const SizedBox(height: 16),
+                    InkWell(
+                      onTap: _selectCustomRange,
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceCard,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppColors.primary, width: 1.5),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              _customStart != null && _customEnd != null
+                                  ? "${_customStart!.toString().split(' ')[0]}  —  ${_customEnd!.toString().split(' ')[0]}"
+                                  : "Select Date Range",
+                              style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark),
+                            ),
+                            const Icon(Icons.date_range_rounded, color: AppColors.primary),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 24),
 
                   Row(
