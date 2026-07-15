@@ -5,6 +5,7 @@ import '../l10n/app_localizations.dart';
 import '../models/order.dart';
 import '../providers/theme_provider.dart';
 import '../repositories/order_repository.dart';
+import '../services/notification_service.dart';
 import '../utils/app_colors.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -90,7 +91,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               child: _orders.isEmpty
                   ? _buildEmptyState(l10n)
                   : ListView.builder(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       itemCount: _orders.length,
                       itemBuilder: (context, index) => _buildReminderCard(_orders[index], l10n),
                     ),
@@ -114,11 +115,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               const SizedBox(height: 24),
               Text(
                 l10n.noNotifications,
+                textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
               ),
               const SizedBox(height: 8),
               Text(
                 l10n.notificationsWillShow,
+                textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 14, color: AppColors.textMedium),
               ),
             ],
