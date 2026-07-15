@@ -711,4 +711,20 @@ class AppLocalizationsUr extends AppLocalizations {
   String reminderScheduledFor(String date) {
     return 'یاد دہانی $date کو صبح 9:00 بجے مقرر ہے';
   }
+
+  @override
+  String get confirmPayment => 'ادائیگی کی تصدیق کریں';
+
+  @override
+  String totalDue(String amount) {
+    return 'کل باقی رقم: Rs. $amount';
+  }
+
+  @override
+  String dueForDeliveryOn(String date) {
+    return '$date کو ترسیل کے لئے مقرر';
+  }
+
+  @override
+  String get closeButton => 'بند کریں';
 }

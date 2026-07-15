@@ -240,5 +240,10 @@
   "noNotifications": "ابھی تک کوئی یاد دہانی نہیں",
   "notificationsWillShow": "ترسیل کی تاریخ والے آرڈرز کی تیاری کی یاد دہانی یہاں ظاہر ہوگی",
   "reminderSent": "یاد دہانی بھیج دی گئی",
-  "reminderScheduledFor": "یاد دہانی {date} کو صبح 9:00 بجے مقرر ہے"
+  "reminderScheduledFor": "یاد دہانی {date} کو صبح 9:00 بجے مقرر ہے",
+  
+  "confirmPayment": "ادائیگی کی تصدیق کریں",
+  "totalDue": "کل باقی رقم: Rs. {amount}",
+  "dueForDeliveryOn": "{date} کو ترسیل کے لئے مقرر",
+  "closeButton": "بند کریں"
 }

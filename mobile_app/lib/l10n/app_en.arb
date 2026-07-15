@@ -264,5 +264,16 @@
   "reminderScheduledFor": "Reminder scheduled for {date}, 9:00 AM",
   "@reminderScheduledFor": {
     "placeholders": { "date": { "type": "String" } }
-  }
+  },
+  
+  "confirmPayment": "Confirm Payment",
+  "totalDue": "Total Due: Rs. {amount}",
+  "@totalDue": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "dueForDeliveryOn": "Due for delivery on {date}",
+  "@dueForDeliveryOn": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "closeButton": "Close"
 }

@@ -120,7 +120,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           Expanded(
             child: _buildStatCard(
-              title: 'Today',
+              title: l10n.today,
               value: 'Rs. ${_summary?['today_revenue'] ?? 0}',
               icon: Icons.today_rounded,
               accentColor: AppColors.primary,
@@ -129,7 +129,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(width: 16),
           Expanded(
             child: _buildStatCard(
-              title: 'This Week',
+              title: l10n.thisWeek,
               value: 'Rs. ${_summary?['week_revenue'] ?? 0}',
               icon: Icons.date_range_rounded,
               accentColor: Colors.indigo,
@@ -142,7 +142,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           Expanded(
             child: _buildStatCard(
-              title: 'This Month',
+              title: l10n.thisMonth,
               value: 'Rs. ${_summary?['month_revenue'] ?? 0}',
               icon: Icons.calendar_month_rounded,
               accentColor: AppColors.secondary,
@@ -151,7 +151,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(width: 16),
           Expanded(
             child: _buildStatCard(
-              title: 'Outstanding',
+              title: l10n.outstanding,
               value: 'Rs. ${_summary?['outstanding'] ?? 0}',
               icon: Icons.account_balance_wallet_outlined,
               accentColor: AppColors.statusPending,

@@ -149,7 +149,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                "Due for delivery on ${o.deliveryDate?.toString().split(' ')[0] ?? 'N/A'}",
+                l10n.dueForDeliveryOn(o.deliveryDate?.toString().split(' ')[0] ?? 'N/A'),
                 style: TextStyle(color: AppColors.textMedium, fontSize: 15),
               ),
               const SizedBox(height: 12),
@@ -167,7 +167,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 Navigator.pop(context);
                 _markAsRead(o);
               },
-              child: Text("Close", style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+              child: Text(l10n.closeButton, style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
             ),
           ],
         );

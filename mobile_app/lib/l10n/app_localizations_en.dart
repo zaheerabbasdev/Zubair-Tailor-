@@ -709,4 +709,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String reminderScheduledFor(String date) {
     return 'Reminder scheduled for $date, 9:00 AM';
   }
+
+  @override
+  String get confirmPayment => 'Confirm Payment';
+
+  @override
+  String totalDue(String amount) {
+    return 'Total Due: Rs. $amount';
+  }
+
+  @override
+  String dueForDeliveryOn(String date) {
+    return 'Due for delivery on $date';
+  }
+
+  @override
+  String get closeButton => 'Close';
 }

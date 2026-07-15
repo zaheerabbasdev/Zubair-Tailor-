@@ -1453,6 +1453,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reminder scheduled for {date}, 9:00 AM'**
   String reminderScheduledFor(String date);
+
+  /// No description provided for @confirmPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Payment'**
+  String get confirmPayment;
+
+  /// No description provided for @totalDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Due: Rs. {amount}'**
+  String totalDue(String amount);
+
+  /// No description provided for @dueForDeliveryOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Due for delivery on {date}'**
+  String dueForDeliveryOn(String date);
+
+  /// No description provided for @closeButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get closeButton;
 }
 
 class _AppLocalizationsDelegate

@@ -485,12 +485,12 @@ class _OrderListScreenState extends State<OrderListScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Confirm Payment', style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(l10n.confirmPayment, style: const TextStyle(fontWeight: FontWeight.bold)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Total Due: Rs. ${due.toInt()}', style: const TextStyle(fontWeight: FontWeight.w500)),
+            Text(l10n.totalDue(due.toInt().toString()), style: const TextStyle(fontWeight: FontWeight.w500)),
             const SizedBox(height: 16),
             TextField(
               controller: amountController,
