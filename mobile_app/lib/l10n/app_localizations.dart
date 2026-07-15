@@ -836,11 +836,41 @@ abstract class AppLocalizations {
   /// **'Due {date}'**
   String dueOn(String date);
 
+  /// No description provided for @today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// No description provided for @thisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This Week'**
+  String get thisWeek;
+
   /// No description provided for @thisMonth.
   ///
   /// In en, this message translates to:
   /// **'This Month'**
   String get thisMonth;
+
+  /// No description provided for @thisYear.
+  ///
+  /// In en, this message translates to:
+  /// **'This Year'**
+  String get thisYear;
+
+  /// No description provided for @lastYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Year'**
+  String get lastYear;
+
+  /// No description provided for @customRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get customRange;
 
   /// No description provided for @last30Days.
   ///
@@ -853,6 +883,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'All Time'**
   String get allTime;
+
+  /// No description provided for @payDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay Due (Rs. {amount})'**
+  String payDue(String amount);
+
+  /// No description provided for @fullyPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Fully Paid'**
+  String get fullyPaid;
 
   /// No description provided for @revenueCollected.
   ///

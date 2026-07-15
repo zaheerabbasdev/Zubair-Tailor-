@@ -103,6 +103,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           : RefreshIndicator(
               onRefresh: _fetchSummary,
               child: ListView(
+                physics: const NeverScrollableScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
                 children: [
                   ..._buildDashboardContent(l10n),
@@ -326,12 +327,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     child: Icon(icon, color: accentColor, size: 20),
                   ),
-                  Text(
-                    value,
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: accentColor,
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        value,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: accentColor,
+                        ),
+                      ),
                     ),
                   ),
                 ],

@@ -388,13 +388,36 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get today => 'Today';
+
+  @override
+  String get thisWeek => 'This Week';
+
+  @override
   String get thisMonth => 'This Month';
+
+  @override
+  String get thisYear => 'This Year';
+
+  @override
+  String get lastYear => 'Last Year';
+
+  @override
+  String get customRange => 'Custom';
 
   @override
   String get last30Days => 'Last 30 Days';
 
   @override
   String get allTime => 'All Time';
+
+  @override
+  String payDue(String amount) {
+    return 'Pay Due (Rs. $amount)';
+  }
+
+  @override
+  String get fullyPaid => 'Fully Paid';
 
   @override
   String get revenueCollected => 'Revenue Collected';

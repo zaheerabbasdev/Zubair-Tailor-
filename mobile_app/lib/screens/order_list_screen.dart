@@ -305,41 +305,50 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                             children: [
                                               if (order.customerPhone != null)
-                                                TextButton.icon(
-                                                  icon: const Icon(Icons.chat_rounded, size: 18, color: AppColors.primary),
-                                                  label: Text(
-                                                    l10n.whatsapp,
-                                                    style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 13),
-                                                  ),
-                                                  onPressed: () => sendWhatsAppMessage(
-                                                    context,
-                                                    phone: order.customerPhone!,
-                                                    message: buildOrderStatusMessage(
-                                                      customerName: order.customerName ?? 'Customer',
-                                                      clothingType: order.clothingType,
-                                                      status: order.status,
-                                                      shopName: context.read<ShopProfileProvider>().shopName,
+                                                Flexible(
+                                                  child: TextButton.icon(
+                                                    icon: const Icon(Icons.chat_rounded, size: 16, color: AppColors.primary),
+                                                    label: Text(
+                                                      l10n.whatsapp,
+                                                      style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12),
+                                                    ),
+                                                    style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 6)),
+                                                    onPressed: () => sendWhatsAppMessage(
+                                                      context,
+                                                      phone: order.customerPhone!,
+                                                      message: buildOrderStatusMessage(
+                                                        customerName: order.customerName ?? 'Customer',
+                                                        clothingType: order.clothingType,
+                                                        status: order.status,
+                                                        shopName: context.read<ShopProfileProvider>().shopName,
+                                                      ),
                                                     ),
                                                   ),
                                                 ),
-                                              TextButton.icon(
-                                                icon: const Icon(Icons.receipt_rounded, size: 18, color: AppColors.primary),
-                                                label: Text(
-                                                  l10n.invoice,
-                                                  style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 13),
+                                              Flexible(
+                                                child: TextButton.icon(
+                                                  icon: const Icon(Icons.receipt_rounded, size: 16, color: AppColors.primary),
+                                                  label: Text(
+                                                    l10n.invoice,
+                                                    style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12),
+                                                  ),
+                                                  style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 6)),
+                                                  onPressed: () => InvoiceService.generateAndShareInvoice(context, order),
                                                 ),
-                                                onPressed: () => InvoiceService.generateAndShareInvoice(context, order),
                                               ),
-                                              TextButton.icon(
-                                                icon: const Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
-                                                label: Text(
-                                                  l10n.edit,
-                                                  style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 13),
+                                              Flexible(
+                                                child: TextButton.icon(
+                                                  icon: const Icon(Icons.edit_outlined, size: 16, color: AppColors.primary),
+                                                  label: Text(
+                                                    l10n.edit,
+                                                    style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12),
+                                                  ),
+                                                  style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 6)),
+                                                  onPressed: () => Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(builder: (_) => OrderFormScreen(order: order)),
+                                                  ).then((_) => _fetchOrders()),
                                                 ),
-                                                onPressed: () => Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(builder: (_) => OrderFormScreen(order: order)),
-                                                ).then((_) => _fetchOrders()),
                                               ),
                                             ],
                                           ),
@@ -592,7 +601,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
       return TextButton.icon(
         icon: const Icon(Icons.payments_outlined, size: 18, color: AppColors.primary),
         label: Text(
-          'Pay Due (Rs. ${due.toInt()})',
+          l10n.payDue(due.toInt().toString()),
           style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 13),
         ),
         onPressed: () => _showPaymentDialog(order),
@@ -602,7 +611,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'Fully Paid',
+            l10n.fullyPaid,
             style: TextStyle(color: AppColors.statusReady, fontWeight: FontWeight.bold, fontSize: 13),
           ),
           const SizedBox(width: 4),

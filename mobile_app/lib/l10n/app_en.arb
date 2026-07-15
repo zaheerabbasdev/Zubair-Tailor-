@@ -143,9 +143,19 @@
     "placeholders": { "date": { "type": "String" } }
   },
 
+  "today": "Today",
+  "thisWeek": "This Week",
   "thisMonth": "This Month",
+  "thisYear": "This Year",
+  "lastYear": "Last Year",
+  "customRange": "Custom",
   "last30Days": "Last 30 Days",
   "allTime": "All Time",
+  "payDue": "Pay Due (Rs. {amount})",
+  "@payDue": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "fullyPaid": "Fully Paid",
   "revenueCollected": "Revenue Collected",
   "outstanding": "Outstanding",
   "totalExpenses": "Total Expenses",

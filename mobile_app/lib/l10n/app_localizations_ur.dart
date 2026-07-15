@@ -389,13 +389,36 @@ class AppLocalizationsUr extends AppLocalizations {
   }
 
   @override
+  String get today => 'آج';
+
+  @override
+  String get thisWeek => 'اس ہفتہ';
+
+  @override
   String get thisMonth => 'اس مہینہ';
+
+  @override
+  String get thisYear => 'اس سال';
+
+  @override
+  String get lastYear => 'پچھلا سال';
+
+  @override
+  String get customRange => 'مخصوص';
 
   @override
   String get last30Days => 'پچھلے 30 دن';
 
   @override
   String get allTime => 'تمام وقت';
+
+  @override
+  String payDue(String amount) {
+    return 'باقی رقم ادا کریں (Rs. $amount)';
+  }
+
+  @override
+  String get fullyPaid => 'مکمل ادائیگی';
 
   @override
   String get revenueCollected => 'وصول شدہ آمدنی';

@@ -19,8 +19,18 @@ String localizedStatus(AppLocalizations l10n, String status) {
 
 String localizedRange(AppLocalizations l10n, String range) {
   switch (range) {
+    case 'Today':
+      return l10n.today;
+    case 'This Week':
+      return l10n.thisWeek;
     case 'This Month':
       return l10n.thisMonth;
+    case 'This Year':
+      return l10n.thisYear;
+    case 'Last Year':
+      return l10n.lastYear;
+    case 'Custom':
+      return l10n.customRange;
     case 'Last 30 Days':
       return l10n.last30Days;
     case 'All Time':
