@@ -16,7 +16,9 @@ import '../screens/settings_screen.dart';
 
 
 class AppDrawer extends StatelessWidget {
-  const AppDrawer({super.key});
+  final VoidCallback? onReturn;
+  
+  const AppDrawer({super.key, this.onReturn});
 
   @override
   Widget build(BuildContext context) {
@@ -69,41 +71,46 @@ class AppDrawer extends StatelessWidget {
           _buildDrawerItem(
             icon: Icons.people_alt_rounded,
             title: l10n.customersLabel,
-            onTap: () {
+            onTap: () async {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerListScreen()));
+              await Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerListScreen()));
+              onReturn?.call();
             },
           ),
           _buildDrawerItem(
             icon: Icons.receipt_long_rounded,
             title: l10n.ordersLabel,
-            onTap: () {
+            onTap: () async {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const OrderListScreen()));
+              await Navigator.push(context, MaterialPageRoute(builder: (_) => const OrderListScreen()));
+              onReturn?.call();
             },
           ),
           _buildDrawerItem(
             icon: Icons.notifications_outlined,
             title: l10n.notifications,
-            onTap: () {
+            onTap: () async {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen()));
+              await Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen()));
+              onReturn?.call();
             },
           ),
           _buildDrawerItem(
             icon: Icons.bar_chart_rounded,
             title: l10n.reports,
-            onTap: () {
+            onTap: () async {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsScreen()));
+              await Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsScreen()));
+              onReturn?.call();
             },
           ),
           _buildDrawerItem(
             icon: Icons.account_balance_wallet_outlined,
             title: l10n.expenses,
-            onTap: () {
+            onTap: () async {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const ExpenseListScreen()));
+              await Navigator.push(context, MaterialPageRoute(builder: (_) => const ExpenseListScreen()));
+              onReturn?.call();
             },
           ),
           const Padding(
@@ -113,9 +120,10 @@ class AppDrawer extends StatelessWidget {
           _buildDrawerItem(
             icon: Icons.settings_rounded,
             title: l10n.settings,
-            onTap: () {
+            onTap: () async {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
+              await Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
+              onReturn?.call();
             },
           ),
           const Padding(

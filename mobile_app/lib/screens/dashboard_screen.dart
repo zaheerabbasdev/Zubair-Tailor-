@@ -92,7 +92,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      drawer: const AppDrawer(),
+      drawer: AppDrawer(onReturn: _fetchSummary),
       appBar: AppBar(
         backgroundColor: AppColors.primary,
         elevation: 0,
