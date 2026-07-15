@@ -1,22 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
-import '../models/customer.dart';
-import '../models/order.dart';
 import '../utils/app_colors.dart';
 import '../providers/backup_provider.dart';
 import '../providers/theme_provider.dart';
 import '../repositories/customer_repository.dart';
 import '../repositories/order_repository.dart';
 import '../services/notification_service.dart';
-import '../utils/status_helper.dart';
 import '../widgets/app_drawer.dart';
-import 'customer_detail_screen.dart';
 import 'customer_list_screen.dart';
 import 'order_list_screen.dart';
-
-import 'reports_screen.dart';
-import 'expense_list_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -28,8 +21,8 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   final CustomerRepository _customerRepository = CustomerRepository();
   final OrderRepository _orderRepository = OrderRepository();
-  List<Customer> _customers = [];
-  List<Order> _orders = [];
+
+
   Map<String, dynamic>? _summary;
   bool _isLoading = true;
 
@@ -52,13 +45,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final orders = await _orderRepository.getAll();
       if (mounted) {
         setState(() {
-          _customers = customers;
-          _orders = orders;
+
+
+          final now = DateTime.now();
+          final todayStart = DateTime(now.year, now.month, now.day);
+          final weekStart = DateTime(now.year, now.month, now.day - (now.weekday - 1));
+          final monthStart = DateTime(now.year, now.month, 1);
+          double todayRevenue = 0, weekRevenue = 0, monthRevenue = 0, outstanding = 0;
+          for (final o in orders) {
+            final due = o.price - o.amountPaid;
+            if (due > 0) outstanding += due;
+            if (o.createdAt != null) {
+              if (!o.createdAt!.isBefore(todayStart)) todayRevenue += o.amountPaid;
+              if (!o.createdAt!.isBefore(weekStart)) weekRevenue += o.amountPaid;
+              if (!o.createdAt!.isBefore(monthStart)) monthRevenue += o.amountPaid;
+            }
+          }
           _summary = {
             'total_customers': customers.length,
             'total_orders': orders.length,
             'pending_orders': orders.where((o) => o.status == 'Pending').length,
             'ready_orders': orders.where((o) => o.status == 'Ready').length,
+            'today_revenue': todayRevenue.toInt(),
+            'week_revenue': weekRevenue.toInt(),
+            'month_revenue': monthRevenue.toInt(),
+            'outstanding': outstanding.toInt(),
           };
           _isLoading = false;
         });
@@ -72,12 +83,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  Customer? _customerFor(Order o) {
-    for (final c in _customers) {
-      if (c.id == o.customerId) return c;
-    }
-    return null;
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +114,69 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   List<Widget> _buildDashboardContent(AppLocalizations l10n) {
     return [
-      // Quick Action Buttons
+      // Summary Cards Row 1
+      Row(
+        children: [
+          Expanded(
+            child: _buildStatCard(
+              title: 'Today',
+              value: 'Rs. ${_summary?['today_revenue'] ?? 0}',
+              icon: Icons.today_rounded,
+              accentColor: AppColors.primary,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: _buildStatCard(
+              title: 'This Week',
+              value: 'Rs. ${_summary?['week_revenue'] ?? 0}',
+              icon: Icons.date_range_rounded,
+              accentColor: Colors.indigo,
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 16),
+      Row(
+        children: [
+          Expanded(
+            child: _buildStatCard(
+              title: 'This Month',
+              value: 'Rs. ${_summary?['month_revenue'] ?? 0}',
+              icon: Icons.calendar_month_rounded,
+              accentColor: AppColors.secondary,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: _buildStatCard(
+              title: 'Outstanding',
+              value: 'Rs. ${_summary?['outstanding'] ?? 0}',
+              icon: Icons.account_balance_wallet_outlined,
+              accentColor: AppColors.statusPending,
+            ),
+          ),
+        ],
+      ),
+
+      const SizedBox(height: 28),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            l10n.status,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark),
+          ),
+          Icon(Icons.analytics_outlined, color: AppColors.iconMuted, size: 20),
+        ],
+      ),
+      const SizedBox(height: 16),
+
+      // Status Stats Grid
+      _buildStatsGrid(),
+      const SizedBox(height: 28),
+
+      // Quick Action Buttons (moved below status cards)
       Row(
         children: [
           Expanded(
@@ -132,26 +200,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      const SizedBox(height: 32),
-
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            l10n.status,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textDark,
-            ),
-          ),
-          Icon(Icons.analytics_outlined, color: AppColors.iconMuted, size: 20),
-        ],
-      ),
-      const SizedBox(height: 16),
-
-      // Stats Grid (Premium Cards)
-      _buildStatsGrid(),
       const SizedBox(height: 32),
     ];
   }
@@ -306,52 +354,5 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildNavigationItem(
-    BuildContext context,
-    String label,
-    IconData icon,
-    Color iconColor,
-    VoidCallback onTap,
-  ) {
-    return Material(
-      color: AppColors.surfaceCard,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: AppColors.cardShadow,
-            border: Border.all(color: AppColors.divider, width: 1),
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: iconColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: iconColor, size: 22),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textDark,
-                  ),
-                ),
-              ),
-              Icon(Icons.arrow_forward_ios_rounded, color: AppColors.iconMuted, size: 16),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+
 }
