@@ -52,22 +52,76 @@ class _ReportsScreenState extends State<ReportsScreen> {
     }
   }
 
-  DateTime? get _cutoff {
-    if (_range == 'All Time') return null;
+  DateTime? _customStart;
+  DateTime? _customEnd;
+
+  DateTime? get _cutoffStart {
     final now = DateTime.now();
-    return _range == 'This Month' ? DateTime(now.year, now.month, 1) : now.subtract(const Duration(days: 30));
+    switch (_range) {
+      case 'Today': return DateTime(now.year, now.month, now.day);
+      case 'This Week': return DateTime(now.year, now.month, now.day - (now.weekday - 1));
+      case 'This Month': return DateTime(now.year, now.month, 1);
+      case 'This Year': return DateTime(now.year, 1, 1);
+      case 'Last Year': return DateTime(now.year - 1, 1, 1);
+      case 'Custom': return _customStart;
+      case 'All Time':
+      default: return null;
+    }
+  }
+
+  DateTime? get _cutoffEnd {
+    final now = DateTime.now();
+    switch (_range) {
+      case 'Today': return DateTime(now.year, now.month, now.day, 23, 59, 59);
+      case 'This Week': return DateTime(now.year, now.month, now.day + (7 - now.weekday), 23, 59, 59);
+      case 'This Month': return DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+      case 'This Year': return DateTime(now.year, 12, 31, 23, 59, 59);
+      case 'Last Year': return DateTime(now.year - 1, 12, 31, 23, 59, 59);
+      case 'Custom': return _customEnd;
+      case 'All Time':
+      default: return null;
+    }
   }
 
   List<Order> get _filteredOrders {
-    final cutoff = _cutoff;
-    if (cutoff == null) return _orders;
-    return _orders.where((o) => o.createdAt != null && o.createdAt!.isAfter(cutoff)).toList();
+    final start = _cutoffStart;
+    final end = _cutoffEnd;
+    return _orders.where((o) {
+      if (o.createdAt == null) return false;
+      if (start != null && o.createdAt!.isBefore(start)) return false;
+      if (end != null && o.createdAt!.isAfter(end)) return false;
+      return true;
+    }).toList();
   }
 
   List<Expense> get _filteredExpenses {
-    final cutoff = _cutoff;
-    if (cutoff == null) return _expenses;
-    return _expenses.where((e) => e.expenseDate.isAfter(cutoff)).toList();
+    final start = _cutoffStart;
+    final end = _cutoffEnd;
+    return _expenses.where((e) {
+      if (start != null && e.expenseDate.isBefore(start)) return false;
+      if (end != null && e.expenseDate.isAfter(end)) return false;
+      return true;
+    }).toList();
+  }
+
+  Future<void> _selectCustomRange() async {
+    final initial = DateTimeRange(
+      start: _customStart ?? DateTime.now().subtract(const Duration(days: 7)),
+      end: _customEnd ?? DateTime.now(),
+    );
+    final range = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+      initialDateRange: initial,
+    );
+    if (range != null) {
+      setState(() {
+        _customStart = range.start;
+        _customEnd = DateTime(range.end.year, range.end.month, range.end.day, 23, 59, 59);
+        _range = 'Custom';
+      });
+    }
   }
 
   @override
@@ -116,21 +170,32 @@ class _ReportsScreenState extends State<ReportsScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
-                  Wrap(
-                    spacing: 8,
-                    children: ['This Month', 'Last 30 Days', 'All Time'].map((r) {
-                      final selected = _range == r;
-                      return ChoiceChip(
-                        label: Text(localizedRange(l10n, r), style: TextStyle(fontWeight: FontWeight.bold, color: selected ? Colors.white : AppColors.textDark, fontSize: 13)),
-                        selected: selected,
-                        onSelected: (_) => setState(() => _range = r),
-                        selectedColor: AppColors.primary,
-                        backgroundColor: AppColors.surfaceCard,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                        side: BorderSide(color: selected ? AppColors.primary : AppColors.divider),
-                        showCheckmark: false,
-                      );
-                    }).toList(),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: ['Today', 'This Week', 'This Month', 'This Year', 'Last Year', 'Custom', 'All Time'].map((r) {
+                        final selected = _range == r;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: ChoiceChip(
+                            label: Text(localizedRange(l10n, r), style: TextStyle(fontWeight: FontWeight.bold, color: selected ? Colors.white : AppColors.textDark, fontSize: 13)),
+                            selected: selected,
+                            onSelected: (_) {
+                              if (r == 'Custom') {
+                                _selectCustomRange();
+                              } else {
+                                setState(() => _range = r);
+                              }
+                            },
+                            selectedColor: AppColors.primary,
+                            backgroundColor: AppColors.surfaceCard,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                            side: BorderSide(color: selected ? AppColors.primary : AppColors.divider),
+                            showCheckmark: false,
+                          ),
+                        );
+                      }).toList(),
+                    ),
                   ),
                   const SizedBox(height: 24),
 
