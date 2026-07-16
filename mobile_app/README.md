@@ -19,6 +19,7 @@ A Flutter app for managing a tailoring shop's customers, measurements, orders, a
 - **App Lock** — an optional 4-digit PIN, set in Settings, required every time the app is opened. The PIN is stored in the device's encrypted secure storage, never in plain preferences.
 - **Dark mode** — a full dark theme, toggled in Settings, applied consistently across every screen.
 - **Settings** — switch between English and Urdu at any time (applies to every screen in the app); the choice is persisted.
+- **Secure Licensing** — a 7-day offline trial mechanism strictly linked to the database (prevents trial-resetting via App Data clearing) and device-specific unlock codes (prevents license sharing). An included `generate_license.py` admin script generates these codes.
 - **Backup & Restore** — connect a Google account once, and the app automatically backs up the database to a visible "Zubair Tailors Backups" folder in that Google Drive every time the app is opened, so Drive stays in sync with whatever local changes were made since the app was last used. Manual "Back Up Now" and "Restore Backup" buttons are also available in Settings for an on-demand backup or to roll back to an earlier one. This is what protects your data if the phone is lost, stolen, or breaks — see [Setting up Google Drive backup](#setting-up-google-drive-backup) below, which you must complete once before it will work. Note: order reference photos are stored locally only and are **not** included in Drive backups.
 
 ## Tech stack
@@ -33,6 +34,7 @@ A Flutter app for managing a tailoring shop's customers, measurements, orders, a
 - **csv** for CSV export (`lib/services/export_service.dart`)
 - **flutter_local_notifications** + **timezone** for delivery reminder notifications (`lib/services/notification_service.dart`, Android only)
 - **flutter_secure_storage** for the app-lock PIN (`lib/providers/app_lock_provider.dart`)
+- **device_info_plus** + **crypto** to calculate unshareable device-specific unlock codes
 - **share_plus**, **url_launcher** for Share App / More Apps / WhatsApp deep links
 
 ## Project structure
