@@ -64,4 +64,13 @@ class OrderRepository {
     ''', [orderId]);
     return Order.fromJson(rows.first);
   }
+
+  Future<DateTime?> getOldestOrderDate() async {
+    final db = await DatabaseHelper.instance.database;
+    final rows = await db.rawQuery('SELECT created_at FROM orders ORDER BY created_at ASC LIMIT 1');
+    if (rows.isNotEmpty && rows.first['created_at'] != null) {
+      return DateTime.tryParse(rows.first['created_at'] as String);
+    }
+    return null;
+  }
 }

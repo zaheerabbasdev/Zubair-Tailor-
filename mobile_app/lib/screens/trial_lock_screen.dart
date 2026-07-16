@@ -72,6 +72,33 @@ class _TrialLockScreenState extends State<TrialLockScreen> {
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.white.withOpacity(0.75), fontSize: 14, height: 1.4),
                   ),
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.black26,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.white24),
+                    ),
+                    child: Column(
+                      children: [
+                        const Text(
+                          "Your Device ID",
+                          style: TextStyle(color: Colors.white70, fontSize: 12),
+                        ),
+                        const SizedBox(height: 4),
+                        SelectableText(
+                          context.watch<LicenseProvider>().deviceId,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 28),
                   TextField(
                     controller: _codeController,

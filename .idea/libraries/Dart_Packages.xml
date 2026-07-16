@@ -128,6 +128,20 @@
             </list>
           </value>
         </entry>
+        <entry key="device_info_plus">
+          <value>
+            <list>
+              <option value="D:/pub_cache/hosted/pub.dev/device_info_plus-12.4.0/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="device_info_plus_platform_interface">
+          <value>
+            <list>
+              <option value="D:/pub_cache/hosted/pub.dev/device_info_plus_platform_interface-7.0.3/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="extension_google_sign_in_as_googleapis_auth">
           <value>
             <list>
@@ -968,6 +982,13 @@
             </list>
           </value>
         </entry>
+        <entry key="win32_registry">
+          <value>
+            <list>
+              <option value="D:/pub_cache/hosted/pub.dev/win32_registry-2.1.0/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="xdg_directories">
           <value>
             <list>
@@ -1015,6 +1036,8 @@
       <root url="file://D:/pub_cache/hosted/pub.dev/csv-6.0.0/lib" />
       <root url="file://D:/pub_cache/hosted/pub.dev/cupertino_icons-1.0.8/lib" />
       <root url="file://D:/pub_cache/hosted/pub.dev/dbus-0.7.14/lib" />
+      <root url="file://D:/pub_cache/hosted/pub.dev/device_info_plus-12.4.0/lib" />
+      <root url="file://D:/pub_cache/hosted/pub.dev/device_info_plus_platform_interface-7.0.3/lib" />
       <root url="file://D:/pub_cache/hosted/pub.dev/extension_google_sign_in_as_googleapis_auth-2.0.13/lib" />
       <root url="file://D:/pub_cache/hosted/pub.dev/fake_async-1.3.3/lib" />
       <root url="file://D:/pub_cache/hosted/pub.dev/ffi-2.1.5/lib" />
@@ -1130,6 +1153,7 @@
       <root url="file://D:/pub_cache/hosted/pub.dev/vm_service-15.0.2/lib" />
       <root url="file://D:/pub_cache/hosted/pub.dev/web-1.1.1/lib" />
       <root url="file://D:/pub_cache/hosted/pub.dev/win32-5.15.0/lib" />
+      <root url="file://D:/pub_cache/hosted/pub.dev/win32_registry-2.1.0/lib" />
       <root url="file://D:/pub_cache/hosted/pub.dev/xdg_directories-1.1.0/lib" />
       <root url="file://D:/pub_cache/hosted/pub.dev/xml-6.6.1/lib" />
       <root url="file://D:/pub_cache/hosted/pub.dev/yaml-3.1.3/lib" />
