@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ShopProfileProvider extends ChangeNotifier {
-  static const _defaultName = 'Zubair Tailors';
+  static const _defaultName = 'Tailor Management';
 
   String _shopName = _defaultName;
   String? _shopPhone;
