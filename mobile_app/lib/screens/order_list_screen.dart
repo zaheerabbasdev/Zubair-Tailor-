@@ -94,7 +94,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
             gradient: AppColors.primaryGradient,
           ),
         ),
-        title: Text(l10n.totalOrders, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        title: Text(l10n.ordersLabel, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Column(

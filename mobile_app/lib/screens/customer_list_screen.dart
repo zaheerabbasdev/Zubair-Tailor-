@@ -72,7 +72,7 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
           ),
         ),
         title: Text(
-          l10n.totalCustomers,
+          l10n.customersLabel,
           style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         iconTheme: const IconThemeData(color: Colors.white),

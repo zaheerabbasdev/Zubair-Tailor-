@@ -94,8 +94,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
       backgroundColor: AppColors.background,
       drawer: AppDrawer(onReturn: _fetchSummary),
       appBar: AppBar(
-        backgroundColor: AppColors.primary,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: AppColors.primaryGradient,
+          ),
+        ),
         elevation: 0,
+        title: Text(
+          l10n.dashboard,
+          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading
