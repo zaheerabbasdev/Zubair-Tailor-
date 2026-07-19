@@ -44,6 +44,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
   DateTime? _deliveryDate;
   bool _priority = false;
   String? _imagePath;
+  late final String? _originalImagePath;
   bool _isSaving = false;
 
   @override
@@ -56,6 +57,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
     _deliveryDate = o?.deliveryDate;
     _priority = o?.priority ?? false;
     _imagePath = o?.imageUrl;
+    _originalImagePath = o?.imageUrl;
     _fetchCustomers();
   }
 
@@ -150,7 +152,12 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
       return;
     }
 
-    final picked = await ImagePicker().pickImage(source: source, imageQuality: 85);
+    final picked = await ImagePicker().pickImage(
+      source: source,
+      imageQuality: 85,
+      maxWidth: 1600,
+      maxHeight: 1600,
+    );
     if (picked == null) return;
 
     final docsDir = await getApplicationDocumentsDirectory();
@@ -159,7 +166,16 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
     final destPath = p.join(photosDir.path, 'order_${DateTime.now().microsecondsSinceEpoch}.jpg');
     await File(picked.path).copy(destPath);
 
+    final previousPath = _imagePath;
     setState(() => _imagePath = destPath);
+
+    // Only clean up photos picked earlier in this same session — never the
+    // original photo already saved on the order, in case the user backs out
+    // of this edit without saving and that file is still the DB's reference.
+    if (previousPath != null && previousPath != _originalImagePath) {
+      final previousFile = File(previousPath);
+      if (await previousFile.exists()) await previousFile.delete();
+    }
   }
 
   @override
@@ -406,6 +422,8 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                                     File(_imagePath!),
                                     width: 48,
                                     height: 48,
+                                    cacheWidth: 96,
+                                    cacheHeight: 96,
                                     fit: BoxFit.cover,
                                     errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image_outlined, color: AppColors.primary),
                                   ),
