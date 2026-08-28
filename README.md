@@ -114,25 +114,6 @@ flutter run
 
 ---
 
-## 🔑 Setting up Google Drive Backup
-
-The app backs up the SQLite database to the user's personal Google Drive. To configure this integration for your environment:
-
-1.  Go to the [Google Cloud Console](https://console.cloud.google.com).
-2.  Create a project and enable the **Google Drive API**.
-3.  Configure the **OAuth consent screen**:
-    *   User Type: **External**
-    *   Scopes: `https://www.googleapis.com/auth/drive.file` (only access files created by this app)
-    *   Publishing Status: Set to **In Production** to avoid test session expiration.
-4.  Generate Android OAuth Client IDs for both Debug and Release SHA-1 hashes (package name: `com.zubair.tailors`):
-    *   *Debug Keystore*:
-        ```bash
-        keytool -list -v -keystore %USERPROFILE%\.android\debug.keystore -alias androiddebugkey -storepass android -keypass android
-        ```
-    *   *Release Keystore*: Reference your release keystore parameters from `android/key.properties`.
-
----
-
 ## 🤖 Kotlin Migration Specification
 
 For teams looking to port this project from Flutter to a native Android application, **[`kotlin_app_prompt.md`](file:///e:/Zubair%20Tailors/kotlin_app_prompt.md)** provides a complete system architecture mapping:
