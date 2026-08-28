@@ -9,69 +9,143 @@ A comprehensive, offline-first shop management system designed for tailoring bus
 The repository is organized as follows:
 
 *   **[`mobile_app/`](file:///e:/Zubair%20Tailors/mobile_app)**: The primary mobile application built with Flutter (Material 3). It supports customer management, measurements tracking (with historic logs), order status tracking, custom PDF invoicing, offline-first SQLite storage, Google Drive sync, and bilingual localization (English / Urdu).
-*   **[`generate-unlock-code.ps1`](file:///e:/Zubair%20Tailors/generate-unlock-code.ps1)**: A PowerShell administrative script used to generate device-specific offline license activation keys.
 *   **[`kotlin_app_prompt.md`](file:///e:/Zubair%20Tailors/kotlin_app_prompt.md)**: A complete, structured system specification and development brief detailing all requirements, schemas, and logic for migrating the Flutter app to a native Kotlin Android application (using Jetpack Compose, Room, DataStore, and AlarmManager).
 
 ---
 
-## 📱 Mobile App (Flutter)
+## 📱 Application Screenshots / Screen Showcases
 
-The core product is a fully offline-first app that runs on Android, iOS, and Windows/Linux desktop environments (web is not supported due to native SQLite requirements).
+### 📊 Main Dashboard
+![Main Dashboard](mobile_app/assets/images/Dashboard.jpeg)
 
-### Key Features
+### 👥 Customer Directory & Management
+![Customer Directory](mobile_app/assets/images/customer.jpeg)
+![Edit Customer](mobile_app/assets/images/Edit_customer.jpeg)
+
+### 📏 Measurements Form
+![Measurements Form](mobile_app/assets/images/Measurement.jpeg)
+
+### 🛍️ Orders & Workflows
+![Order Directory](mobile_app/assets/images/Orders.jpeg)
+![New Order](mobile_app/assets/images/New_Orders.jpeg)
+![Order Status](mobile_app/assets/images/inpogress.jpeg)
+
+### 💸 Expenses & Business Reports
+![Expenses](mobile_app/assets/images/expenses.jpeg)
+![Reports](mobile_app/assets/images/reports.jpeg)
+
+### ⚙️ App Settings & Localization
+![Language Settings](mobile_app/assets/images/language.jpeg)
+![Notification Alert](mobile_app/assets/images/notifications.jpeg)
+![Settings Panel](mobile_app/assets/images/setting1.jpeg)
+![Google Drive Backup](mobile_app/assets/images/backup.jpeg)
+
+---
+
+## 🌟 Mobile App Key Features
+
 *   **Customers & Measurements**: Store complete customer files with detailed measurements for *Shalwar Kameez*, *Waistcoat*, *Two-Piece*, and *Three-Piece* suits (with historical backup).
-*   **Order & Payment Workflows**: Create orders with custom delivery dates, priority status, reference photos, linear status tracking (Pending ➔ In Progress ➔ Ready ➔ Delivered), and automatic payment-on-delivery collection prompts.
+    *   *Measurements detail*: shirt length/width, shoulder, sleeve, collar, chest, ghera, pancha, ban/daman/sleeve style, pockets, and finishing details (ring button, double silai, chamak tar), with full historic logs.
+*   **Order & Payment Workflows**: Create orders with custom delivery dates, priority status, reference photos, linear status tracking (`Pending` ➔ `In Progress` ➔ `Ready` ➔ `Delivered`), and automatic payment-on-delivery collection prompts.
 *   **Bilingual & Adaptive UI**: Full support for English and Urdu with automatic Right-to-Left (RTL) layout switching and an offline theme toggle (Light / Dark Mode).
 *   **Google Drive Backups**: Sync offline SQLite databases directly to the shop owner's personal Google Drive folder for safe-keeping.
 *   **Security & Licensing**: Keep data safe via a 4-digit PIN stored in encrypted secure storage, and enforce monetization with a 7-day offline trial and device-locked activation codes.
 *   **Utility Services**: One-tap WhatsApp notifications, local notifications for delivery reminders (Android only), PDF invoice generation, and CSV data export.
 
-For deep-dive setup instructions, Google Cloud/Drive OAuth configuration, and platform-specific build details, please refer to the **[Mobile App README](file:///e:/Zubair%20Tailors/mobile_app/README.md)**.
+---
+
+## 🛠️ Tech Stack & Dependencies
+
+*   **Framework**: Flutter (Material 3)
+*   **Database (Local)**: `sqflite` (Android/iOS) and `sqflite_common_ffi` (Windows/Linux)
+*   **State Management**: `provider` for application state (locale, theme, app lock, backup status)
+*   **Google Drive API**: `google_sign_in` + `googleapis` (`drive/v3`)
+*   **Localization**: `flutter_localizations` (Urdu & English)
+*   **Invoicing**: `pdf` + `printing` for PDF generation and native share sheet integration
+*   **Local Notifications**: `flutter_local_notifications` + `timezone` for delivery reminders
+*   **Storage & Utilities**: `flutter_secure_storage` (PIN encryption), `device_info_plus` + `crypto` (device-specific hashes), `share_plus`, `url_launcher`
 
 ---
 
-## 🔑 Administrative License Key Generator
+## 📁 Mobile App Project Structure
 
-The mobile app includes a licensing gate to manage activations. To activate a device, you can use the provided **[`generate-unlock-code.ps1`](file:///e:/Zubair%20Tailors/generate-unlock-code.ps1)** utility.
+```
+mobile_app/lib/
+  db/            DatabaseHelper — schema definition, versioned migrations, and SQLite connection
+  models/        Customer, Measurement, Order, Expense (plain Dart classes with toJson/fromJson/copyWith)
+  repositories/  CustomerRepository, MeasurementRepository, OrderRepository, ExpenseRepository — all SQL lives here
+  services/      BackupService (Google Drive), InvoiceService (PDF), ExportService (CSV), NotificationService (delivery reminders)
+  providers/     LocaleProvider, ThemeProvider, BackupProvider, AppLockProvider (ChangeNotifiers)
+  screens/       Dashboard, Customer List/Detail, Measurement Form, Order List/Form, Upcoming Deliveries, Reports, Expense List, Settings, App Lock, Splash
+  widgets/       Shared widgets (app drawer, add-customer sheet, expense form sheet)
+  utils/         AppColors, FractionHelper, StatusHelper, WhatsappHelper
+  l10n/          Generated localization code + app_en.arb / app_ur.arb source strings
+```
 
-### Generating an Activation Key
+---
 
-1. Retrieve the **Device ID** from the application's licensing/trial screen (derived from the hardware's secure Android ID).
-2. Open PowerShell and run the script, passing the Device ID as a parameter:
-   ```powershell
-   .\generate-unlock-code.ps1 -DeviceId "DEVICE_ID_HERE"
-   ```
-3. The script will generate a unique 8-character uppercase unlock code linked exclusively to that device.
+## 🚀 Getting Started
+
+### Prerequisites
+
+To run the Flutter mobile app locally, navigate to the `mobile_app` folder:
+```bash
+cd mobile_app
+flutter pub get
+flutter run
+```
+
+### Android Build Configurations
+
+*   **NDK Pinning**: `android/app/build.gradle.kts` pins `ndkVersion` to avoid large Gradle NDK downloads. Update the pin to match your local SDK cache if needed.
+*   **Desugaring**: Core library desugaring is enabled for older Android API compatibility.
+*   **Permissions**: `POST_NOTIFICATIONS` is declared in `AndroidManifest.xml` for runtime delivery reminders (Android 13+).
+
+### Asset & Localization Commands
+
+*   **Regenerate Launcher Icons**:
+    ```bash
+    dart run flutter_launcher_icons
+    ```
+*   **Regenerate Localization Files**:
+    ```bash
+    flutter gen-l10n
+    ```
+
+---
+
+## 🔑 Setting up Google Drive Backup
+
+The app backs up the SQLite database to the user's personal Google Drive. To configure this integration for your environment:
+
+1.  Go to the [Google Cloud Console](https://console.cloud.google.com).
+2.  Create a project and enable the **Google Drive API**.
+3.  Configure the **OAuth consent screen**:
+    *   User Type: **External**
+    *   Scopes: `https://www.googleapis.com/auth/drive.file` (only access files created by this app)
+    *   Publishing Status: Set to **In Production** to avoid test session expiration.
+4.  Generate Android OAuth Client IDs for both Debug and Release SHA-1 hashes (package name: `com.zubair.tailors`):
+    *   *Debug Keystore*:
+        ```bash
+        keytool -list -v -keystore %USERPROFILE%\.android\debug.keystore -alias androiddebugkey -storepass android -keypass android
+        ```
+    *   *Release Keystore*: Reference your release keystore parameters from `android/key.properties`.
 
 ---
 
 ## 🤖 Kotlin Migration Specification
 
-For teams or developers looking to port this project from Flutter to a native Android application, **[`kotlin_app_prompt.md`](file:///e:/Zubair%20Tailors/kotlin_app_prompt.md)** contains a complete mapping of Flutter packages and state paradigms to their modern native counterparts:
+For teams looking to port this project from Flutter to a native Android application, **[`kotlin_app_prompt.md`](file:///e:/Zubair%20Tailors/kotlin_app_prompt.md)** provides a complete system architecture mapping:
 *   **UI Layout**: Flutter Widgets ➔ Jetpack Compose (Material 3)
 *   **Local Persistence**: `sqflite` ➔ Room Database
 *   **Local Notifications & Reminders**: `AlarmManager` + `BroadcastReceiver`
 *   **Encrypted PIN Storage**: `flutter_secure_storage` ➔ `EncryptedSharedPreferences`
 
-Refer to the prompt document directly to bootstrap native Kotlin development.
-
 ---
 
-## 🛠️ Quick Start
+## ⚠️ Known Limitations
 
-To run the Flutter mobile app in your local development environment:
-
-1. Navigate to the mobile app directory:
-   ```bash
-   cd mobile_app
-   ```
-2. Install the necessary dependencies:
-   ```bash
-   flutter pub get
-   ```
-3. Run the application on your connected emulator or physical device:
-   ```bash
-   flutter run
-   ```
-
-*Note: For detailed Android NDK pinning guidelines, local notification configurations, and asset generation instructions, see the [mobile app documentation](file:///e:/Zubair%20Tailors/mobile_app/README.md).*
+*   **Order Photos**: Stored locally on the device only; they are not uploaded to Google Drive backups.
+*   **Notifications**: Delivery reminder alerts are Android-only.
+*   **Timestamps**: Relative backup times (e.g. "5m ago") do not currently localize to Urdu.
+*   **Test Coverage**: Standard default Flutter templates are unedited; no custom test coverage exists.
